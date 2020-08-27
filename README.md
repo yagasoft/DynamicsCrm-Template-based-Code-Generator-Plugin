@@ -1,6 +1,6 @@
 # DynamicsCrm-Template-based-Code-Generator-Plugin
 
-### Version: 1.0.0.3
+### Version: 1.0.0.4
 ---
 
 An XrmToolBox plugin that can be used to generate Early-bound code from a CRM Schema using a customisable T4 Template.
@@ -29,6 +29,8 @@ The engine for this Plugin and the VS Extension is the same. The settings and T4
 
 ## Changes
 
+#### _v1.0.0.4 (2020-08-27)_
++ Fixed: assembly issues
 #### _v1.0.0.3 (2020-08-25)_
 + Changed: updated package name
 #### _v1.0.0.1 (2020-08-24)_
