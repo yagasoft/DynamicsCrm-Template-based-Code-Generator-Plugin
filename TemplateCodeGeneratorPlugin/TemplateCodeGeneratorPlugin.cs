@@ -1,6 +1,11 @@
 ﻿#region Imports
 
+using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
 using XrmToolBox.Extensibility;
 using XrmToolBox.Extensibility.Interfaces;
 using Yagasoft.TemplateCodeGeneratorPlugin.Control;
@@ -19,8 +24,46 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin
 	[ExportMetadata("Description", "Generate Early-bound code from a CRM Schema using a customisable T4 Template.")]
 	public class TemplateCodeGeneratorPlugin : PluginBase
 	{
+		private IDictionary<string, Assembly> resolvedAssemblies = new Dictionary<string, Assembly>();
+
 		public override IXrmToolBoxPluginControl GetControl()
 		{
+////			AppDomain.CurrentDomain.AssemblyResolve +=
+////				(s, args) =>
+////				{
+////					// check for assemblies already loaded
+////					var loaded = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => a.FullName == args.Name);
+
+////					if (loaded != null)
+////					{
+////						return loaded;
+////					}
+					
+////					// Note: Requires a using statement for System.Reflection and System.Diagnostics.
+////					var assembly = Assembly.GetExecutingAssembly();
+////					var embeddedResources = new List<string>(assembly.GetManifestResourceNames());
+////					var assemblyName = new AssemblyName(args.Name).Name;
+////					var fileName = $"{assemblyName}.dll";
+////					var resourceName = embeddedResources.FirstOrDefault(ern => ern.EndsWith(fileName));
+
+////					if (string.IsNullOrWhiteSpace(resourceName))
+////					{
+////						return null;
+////					}
+
+////					using (var stream = assembly.GetManifestResourceStream(resourceName))
+////					{
+////						var assemblyData = new byte[stream.Length];
+////						stream.Read(assemblyData, 0, assemblyData.Length);
+////						var test = Assembly.Load(assemblyData);
+////						var @namespace = test.GetTypes().Where(t => t.Name == assemblyName).Select(t => t.Namespace).FirstOrDefault();
+////#if DEBUG
+////						Debug.WriteLine($"\tNamespace for '{fileName}' is '{@namespace}'");
+////#endif
+////						return Assembly.Load(assemblyData);
+////					}
+////				};
+
 			return new PluginControl();
 		}
 	}

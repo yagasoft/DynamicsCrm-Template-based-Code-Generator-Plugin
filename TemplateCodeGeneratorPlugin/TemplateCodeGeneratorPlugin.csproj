@@ -105,6 +105,7 @@
       <HintPath>..\packages\NuGet.Core.2.14.0\lib\net40-Client\NuGet.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework">
       <Private>False</Private>
     </Reference>
@@ -136,16 +137,10 @@
     <Reference Include="System.DirectoryServices">
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.DirectoryServices.AccountManagement">
-      <Private>False</Private>
-    </Reference>
     <Reference Include="System.Drawing">
       <Private>False</Private>
     </Reference>
     <Reference Include="System.IdentityModel">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Management">
       <Private>False</Private>
     </Reference>
     <Reference Include="System.Net">
@@ -210,10 +205,8 @@
     <Reference Include="System.Workflow.Runtime">
       <Private>False</Private>
     </Reference>
+    <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq">
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System.Data.DataSetExtensions">
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.CSharp">
@@ -225,6 +218,7 @@
     <Reference Include="System.Xml">
       <Private>False</Private>
     </Reference>
+    <Reference Include="UIAutomationProvider" />
     <Reference Include="WeifenLuo.WinFormsUI.Docking, Version=3.0.6.0, Culture=neutral, PublicKeyToken=5cded1a1a0a7b481, processorArchitecture=MSIL">
       <HintPath>..\packages\DockPanelSuite.3.0.6\lib\net40\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
       <Private>False</Private>
@@ -233,6 +227,8 @@
       <HintPath>..\packages\DockPanelSuite.ThemeVS2015.3.0.6\lib\net40\WeifenLuo.WinFormsUI.Docking.ThemeVS2015.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="WindowsBase" />
+    <Reference Include="WindowsFormsIntegration" />
     <Reference Include="XrmToolBox, Version=1.2020.2.36, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\XrmToolBoxPackage.1.2020.2.36\lib\net462\XrmToolBox.exe</HintPath>
       <Private>False</Private>
@@ -249,27 +245,76 @@
       <HintPath>..\lib\Yagasoft.CrmCodeGenerator.dll</HintPath>
     </Reference>
     <Reference Include="Yagasoft.Libraries.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d99f90f6e31ed2df, processorArchitecture=MSIL">
-      <HintPath>..\packages\Yagasoft.Libraries.Common.2.2.6\lib\net462\Yagasoft.Libraries.Common.dll</HintPath>
+      <HintPath>..\packages\Yagasoft.Libraries.Common.2.3.1\lib\net462\Yagasoft.Libraries.Common.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Control\CodeEditor.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Control\ControlData.cs" />
+    <Compile Include="Control\EntitySelectorForms.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Control\EntitySelectorForms.Designer.cs">
+      <DependentUpon>EntitySelectorForms.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Control\TemplateEditor.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Control\TemplateEditor.Designer.cs">
+      <DependentUpon>TemplateEditor.cs</DependentUpon>
+    </Compile>
     <Compile Include="Control\XrmMockGeneratorPluginControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
-    <Compile Include="Helpers\DataHelpers.cs" />
+    <Compile Include="Dialogues\Converters\BoolToVisibilityConverter.cs" />
+    <Compile Include="Dialogues\EntitySelection.xaml.cs">
+      <DependentUpon>EntitySelection.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogues\FilterDetails.xaml.cs">
+      <DependentUpon>FilterDetails.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogues\MultiSelectComboBox.xaml.cs">
+      <DependentUpon>MultiSelectComboBox.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogues\Options.xaml.cs">
+      <DependentUpon>Options.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Dialogues\PopupSelector.xaml.cs">
+      <DependentUpon>PopupSelector.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\Extensions.cs" />
+    <Compile Include="Helpers\FileHelpers.cs" />
+    <Compile Include="Helpers\Status.cs" />
+    <Compile Include="Helpers\WindowExtensions.cs" />
+    <Compile Include="Helpers\WorkerHelper.cs" />
+    <Compile Include="Helpers\WpfHelpers.cs" />
+    <Compile Include="Model\Constants.cs" />
+    <Compile Include="Model\Settings\File\SavedFileGroup.cs" />
     <Compile Include="Model\Settings\File\SavedFile.cs" />
     <Compile Include="Model\Settings\PluginSettings.cs" />
     <Compile Include="Model\Settings\SerialisableDictionary.cs" />
-    <Compile Include="Model\ViewModel\EntityNameViewModel.cs" />
+    <Compile Include="Model\ViewModels\EntityNameViewModel.cs" />
+    <Compile Include="Model\ViewModels\TemplateViewModel.cs" />
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Resources.resx</DependentUpon>
+    </Compile>
     <Compile Include="Templates\DefaultTemplate.cs" />
     <Compile Include="Templates\DefaultTemplateEngineHost.cs" />
     <Compile Include="Utils\HotKeyManager.cs" />
     <Compile Include="TemplateCodeGeneratorPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\ClearModeEnumUi.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\EntityFilterGridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\EntityGridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\EntityProfileGridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\EntitySelectionGridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\GridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\Relations1NGridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\RelationsN1GridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\RelationsNnGridRow.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -286,8 +331,18 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Control\EntitySelectorForms.resx">
+      <DependentUpon>EntitySelectorForms.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Control\TemplateEditor.resx">
+      <DependentUpon>TemplateEditor.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Control\XrmMockGeneratorPluginControl.resx">
       <DependentUpon>XrmMockGeneratorPluginControl.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
@@ -298,22 +353,42 @@
   <ItemGroup>
     <Content Include="nuget-access-key.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Page Include="Dialogues\EntitySelection.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialogues\FilterDetails.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialogues\MultiSelectComboBox.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialogues\Options.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+    <Page Include="Dialogues\PopupSelector.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
+  </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>IF NOT EXIST "$(SolutionDir)XrmToolBox\Plugins" mkdir "$(SolutionDir)XrmToolBox\Plugins"
 
 IF "$(ConfigurationName)" == "Debug" (
-  $(SolutionDir)packages\ILMerge.3.0.41\tools\net452\ILMerge.exe /out:$(TargetFileName) "$(TargetDir)*.dll" /target:library /wildcards /lib:"$(SolutionDir)lib\ILMerge" /lib:"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\PrivateAssemblies" /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.2" /attr:"$(TargetPath)"
-  copy /Y $(TargetName).pdb "$(SolutionDir)XrmToolBox\Plugins"
+  $(SolutionDir)packages\ILMerge.3.0.41\tools\net452\ILMerge.exe /out:"$(SolutionDir)XrmToolBox\Plugins\$(TargetFileName)" "$(TargetDir)*.dll" /target:library /wildcards /lib:"$(SolutionDir)lib\ILMerge" /lib:"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\PrivateAssemblies" /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.2" /attr:"$(TargetPath)"
 )
 
 IF "$(ConfigurationName)" == "Release" (
-  $(SolutionDir)packages\ILMerge.3.0.41\tools\net452\ILMerge.exe /out:$(TargetFileName) "$(TargetDir)*.dll" /target:library /wildcards /ndebug /lib:"$(SolutionDir)lib\ILMerge" /lib:"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\PrivateAssemblies" /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.2" /attr:"$(TargetPath)"
+  $(SolutionDir)packages\ILMerge.3.0.41\tools\net452\ILMerge.exe /out:"$(SolutionDir)XrmToolBox\Plugins\$(TargetFileName)" "$(TargetDir)*.dll" /target:library /wildcards /ndebug /lib:"$(SolutionDir)lib\ILMerge" /lib:"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\PrivateAssemblies" /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.2" /attr:"$(TargetPath)"
   $(SolutionDir)lib/nuget.exe pack $(ProjectDir)\TemplateCodeGeneratorPlugin.nuspec
   copy /Y "$(TargetDir)*.nupkg" "C:\Nuget.Local\"
 )
-
-copy /Y $(TargetFileName) "$(SolutionDir)XrmToolBox\Plugins"
 </PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>

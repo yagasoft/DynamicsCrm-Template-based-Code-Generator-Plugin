@@ -12,6 +12,8 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Model.Settings
 
     public class PluginSettings
     {
-	    public SerializableDictionary<SavedFileType, SavedFile> SavedFiles = new SerializableDictionary<SavedFileType, SavedFile>();
+	    public SerializableDictionary<string, SavedFileGroup> SavedFiles = new SerializableDictionary<string, SavedFileGroup>();
+	    public string LatestPath;
+	    public string ReleaseNotesShownVersion;
     }
 }
