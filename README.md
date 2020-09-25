@@ -19,7 +19,7 @@ Install ([here](https://www.xrmtoolbox.com/plugins/plugininfo/?id=45abdb43-f0e5-
 
 A more sophisticated Visual Studio Extension can be found at [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=Yagasoft.CrmCodeGenerator).
 
-The engine for this Plugin and the VS Extension is the same. The settings and T4 Templates can be used for both (pre-v7 of the extension).
+The engine for this Plugin and the VS Extension is the same. The settings and T4 Templates can be used for both.
 
 ## Credits
 
