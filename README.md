@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/yagasoft/DynamicsCrm-TemplateBasedCodeGeneratorPlugin](https://badges.gitter.im/yagasoft/DynamicsCrm-TemplateBasedCodeGeneratorPlugin.svg)](https://gitter.im/yagasoft/DynamicsCrm-TemplateBasedCodeGeneratorPlugin?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-### Version: 1.0.0.5
+### Version: 2.0.0.1
 ---
 
 An XrmToolBox plugin that can be used to generate Early-bound code from a CRM Schema using a customisable T4 Template.
@@ -19,11 +19,13 @@ Install ([here](https://www.xrmtoolbox.com/plugins/plugininfo/?id=45abdb43-f0e5-
 
 A more sophisticated Visual Studio Extension can be found at [VS Marketplace](https://marketplace.visualstudio.com/items?itemName=Yagasoft.CrmCodeGenerator).
 
-The engine for this Plugin and the VS Extension is the same. The settings and T4 Templates can be used for both.
+The engine for this Plugin and the VS Extension is the same. The settings and T4 Templates can be used for both (with minor modification).
+
+You can read a quick overview of the tool and its functionality [here](http://blog.yagasoft.com/2020/09/dynamics-template-based-code-generator-supercharged).
 
 ## Credits
 
-  + VS Extension base code:
+  + Base code:
 	+ Eric Labashosky
 	+ https://github.com/xairrick/CrmCodeGenerator
   + My work:
