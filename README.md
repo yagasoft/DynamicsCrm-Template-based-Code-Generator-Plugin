@@ -33,7 +33,7 @@ The engine for this Plugin and the VS Extension is the same. The settings and T4
 
 ## Changes
 
-#### _v1.0.0.5 (2020-08-28)_
+#### _v2.0.0.1 (2020-09-26)_
 + Added: all missing features from VS extension (click on 'Quick Guide' for more info), except Contracts
 + Added: keep track of paths (settings, template, and code) used in previous sessions and the links between them
 + Fixed: layout issues

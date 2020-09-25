@@ -16,27 +16,28 @@
       An XrmToolBox plugin that can be used to generate Early-bound code from a CRM Schema using a customisable T4 Template.
 
       Features:
-
-      Preserved the original CrmSvcUtil structure and logic.
-      Customize the way the code is generated.
-      You get a default T4 template for the code that is generated, with a multitude more features than the official tool (features below).
-      You can rewrite the whole template if you wish for any possible requirements.
-      Replaced the SDK types with .NET types.
-      Only choose the entities required.
-      Only the fields required.
-      Option to use display names of entities and fields as variable names instead of logical names.
-      Override field names inside the tool's UI.
-      Ability to Lock variable names to avoid code errors on regeneration.
-      Support for strongly-typed alternate keys, for entities and Entity References.
-      Add annotations for model validation.
-      Generate metadata.
-      Field logical and schema names.
-      Localised labels.
-      Automatically limit attributes retrieved from CRM on any entity in a LINQ to the ones choosen (filtered) in the tool (check new entity constructors).
-      Many options to optimise generated code size even further.
-      Generate concrete classes for CRM Actions.
-      Support bulk relation loading.
-      Support filtering on relation loading.
+      + Preserved the original CrmSvcUtil structure and logic.
+      + Customize the way the code is generated.
+      -- You get a default T4 template for the code that is generated, with a multitude more features than the official tool (features below).
+      -- You can rewrite the whole template if you wish for any possible requirements.
+      + Replaced the SDK types with .NET types.
+      + Generate only what's needed
+      -- Only choose the entities required.
+      -- Only the fields required.
+      + Additional control
+      -- Option to use display names of entities and fields as variable names instead of logical names.
+      -- Override field names inside the tool's UI.
+      -- Ability to Lock variable names to avoid code errors on regeneration.
+      + Support for strongly-typed alternate keys, for entities and Entity References.
+      + Add annotations for model validation.
+      + Generate metadata.
+      -- Field logical and schema names.
+      -- Localised labels.
+      + Automatically limit attributes retrieved from CRM on any entity in a LINQ to the ones choosen (filtered) in the tool (check new entity constructors).
+      + Many options to optimise generated code size even further.
+      + Generate concrete classes for CRM Actions.
+      + Support bulk relation loading.
+      -- Support filtering on relation loading.
     </description>
     <copyright>Copyright 2020 Ahmed Elsawalhy</copyright>
     <tags>XrmToolBox plugin,tool,CRM,Dynamics,365,yagasoft,xrm,early,bound,code,generate,generator,t4,template</tags>
