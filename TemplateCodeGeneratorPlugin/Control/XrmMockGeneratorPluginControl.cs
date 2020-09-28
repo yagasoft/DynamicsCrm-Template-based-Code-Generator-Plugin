@@ -85,11 +85,13 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 
 		private ToolStripButton buttonOptions;
 		private Panel panelLinks;
-		private LinkLabel labelLinkSeparator;
 		private LinkLabel linkQuickGuide;
 		private Panel panelToast;
 		private Label labelToast;
 		private ToolStripButton buttonHistory;
+		private ToolStripButton buttonDefaultT4;
+		private ToolStripLabel labelYagasoft;
+		private Label labelSeparator1;
 
 		// load T4 Generator required assemblies
 		private RefreshMode dummy1 = RefreshMode.KeepChanges;
@@ -104,8 +106,6 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 		private readonly WorkerHelper workerHelper;
 		private readonly ConnectionManager connectionManager;
 		private readonly FileHelper fileHelper;
-		private ToolStripButton buttonDefaultT4;
-		private ToolStripLabel labelYagasoft;
 		private readonly UiHelper uiHelper;
 
 		#region Base tool implementation
@@ -117,8 +117,8 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			ShowReleaseNotes();
 
 			workerHelper = new WorkerHelper(
-				(s, work, callback) => Invoke(new Action(() => RunAsync(s, work, callback))),
-				(s, work, callback) => Invoke(new Action(() => RunAsync(s, work, callback))));
+				(s, work, callback) => InvokeSafe(() => RunAsync(s, work, callback)),
+				(s, work, callback) => InvokeSafe(() => RunAsync(s, work, callback)));
 			connectionManager = new ConnectionManager(() => Service);
 			fileHelper = new FileHelper(pluginSettings,
 				(filetype, savedFileGroup) =>
@@ -147,7 +147,19 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 					uiHelper.ShowToast($"{filetype} saved.");
 				});
 			templateViewModel = new TemplateViewModel();
-			uiHelper = new UiHelper(panelToast, labelToast, action => Invoke(action));
+			uiHelper = new UiHelper(panelToast, labelToast, InvokeSafe);
+		}
+
+		private void InvokeSafe(Action action)
+		{
+			if (IsHandleCreated)
+			{
+				Invoke(action);
+			}
+			else
+			{
+				action();
+			}
 		}
 
 		private void LoadPluginSettings()
@@ -274,6 +286,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
 			this.buttonClearCache = new System.Windows.Forms.ToolStripButton();
 			this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+			this.labelYagasoft = new System.Windows.Forms.ToolStripLabel();
 			this.linkDownVs = new System.Windows.Forms.LinkLabel();
 			this.buttonCancel = new System.Windows.Forms.Button();
 			this.tableLayoutMainPanel = new System.Windows.Forms.TableLayoutPanel();
@@ -283,12 +296,11 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.labelNamespace = new System.Windows.Forms.Label();
 			this.textBoxNamespace = new System.Windows.Forms.TextBox();
 			this.panelLinks = new System.Windows.Forms.Panel();
-			this.labelLinkSeparator = new System.Windows.Forms.LinkLabel();
 			this.linkQuickGuide = new System.Windows.Forms.LinkLabel();
 			this.panelHost = new System.Windows.Forms.Panel();
 			this.panelToast = new System.Windows.Forms.Panel();
 			this.labelToast = new System.Windows.Forms.Label();
-			this.labelYagasoft = new System.Windows.Forms.ToolStripLabel();
+			this.labelSeparator1 = new System.Windows.Forms.Label();
 			this.toolBar.SuspendLayout();
 			this.tableLayoutMainPanel.SuspendLayout();
 			this.tableLayoutPanel2.SuspendLayout();
@@ -460,6 +472,19 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.toolStripSeparator5.Name = "toolStripSeparator5";
 			this.toolStripSeparator5.Size = new System.Drawing.Size(6, 25);
 			// 
+			// labelYagasoft
+			// 
+			this.labelYagasoft.Font = new System.Drawing.Font("Verdana", 8F, System.Drawing.FontStyle.Bold);
+			this.labelYagasoft.ForeColor = System.Drawing.Color.DarkViolet;
+			this.labelYagasoft.IsLink = true;
+			this.labelYagasoft.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
+			this.labelYagasoft.LinkColor = System.Drawing.Color.DarkViolet;
+			this.labelYagasoft.Name = "labelYagasoft";
+			this.labelYagasoft.Size = new System.Drawing.Size(95, 22);
+			this.labelYagasoft.Text = "Yagasoft.com";
+			this.labelYagasoft.VisitedLinkColor = System.Drawing.Color.DarkBlue;
+			this.labelYagasoft.Click += new System.EventHandler(this.labelYagasoft_Click);
+			// 
 			// linkDownVs
 			// 
 			this.linkDownVs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
@@ -567,7 +592,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			// 
 			// panelLinks
 			// 
-			this.panelLinks.Controls.Add(this.labelLinkSeparator);
+			this.panelLinks.Controls.Add(this.labelSeparator1);
 			this.panelLinks.Controls.Add(this.linkQuickGuide);
 			this.panelLinks.Controls.Add(this.linkDownVs);
 			this.panelLinks.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -575,19 +600,6 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.panelLinks.Name = "panelLinks";
 			this.panelLinks.Size = new System.Drawing.Size(214, 20);
 			this.panelLinks.TabIndex = 2;
-			// 
-			// labelLinkSeparator
-			// 
-			this.labelLinkSeparator.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-			this.labelLinkSeparator.AutoSize = true;
-			this.labelLinkSeparator.Location = new System.Drawing.Point(75, 3);
-			this.labelLinkSeparator.Name = "labelLinkSeparator";
-			this.labelLinkSeparator.Size = new System.Drawing.Size(9, 13);
-			this.labelLinkSeparator.TabIndex = 22;
-			this.labelLinkSeparator.TabStop = true;
-			this.labelLinkSeparator.Text = "|";
-			this.labelLinkSeparator.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 
 			// linkQuickGuide
 			// 
@@ -639,18 +651,16 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.labelToast.Text = "<toast>";
 			this.labelToast.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 
-			// labelYagasoft
+			// labelSeparator1
 			// 
-			this.labelYagasoft.Font = new System.Drawing.Font("Verdana", 8F, System.Drawing.FontStyle.Bold);
-			this.labelYagasoft.ForeColor = System.Drawing.Color.DarkViolet;
-			this.labelYagasoft.IsLink = true;
-			this.labelYagasoft.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
-			this.labelYagasoft.LinkColor = System.Drawing.Color.DarkViolet;
-			this.labelYagasoft.Name = "labelYagasoft";
-			this.labelYagasoft.Size = new System.Drawing.Size(95, 22);
-			this.labelYagasoft.Text = "Yagasoft.com";
-			this.labelYagasoft.VisitedLinkColor = System.Drawing.Color.DarkBlue;
-			this.labelYagasoft.Click += new System.EventHandler(this.labelYagasoft_Click);
+			this.labelSeparator1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+			this.labelSeparator1.AutoSize = true;
+			this.labelSeparator1.Location = new System.Drawing.Point(75, 3);
+			this.labelSeparator1.Name = "labelSeparator1";
+			this.labelSeparator1.Size = new System.Drawing.Size(9, 13);
+			this.labelSeparator1.TabIndex = 0;
+			this.labelSeparator1.Text = "|";
 			// 
 			// PluginControl
 			// 
@@ -1183,7 +1193,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 							}
 							finally
 							{
-								Invoke(new Action(() => buttonCancel.Hide()));
+								InvokeSafe(() => buttonCancel.Hide());
 								EnableTool();
 							}
 						},
@@ -1222,22 +1232,22 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 
 		private void EnableTool()
 		{
-			Invoke(new Action(
+			InvokeSafe(
 				() =>
 				{
 					tableLayoutMainPanel.Enabled = true;
 					toolBar.Enabled = true;
-				}));
+				});
 		}
 
 		private void DisableTool()
 		{
-			Invoke(new Action(
+			InvokeSafe(
 				() =>
 				{
 					toolBar.Enabled = false;
 					tableLayoutMainPanel.Enabled = false;
-				}));
+				});
 		}
 
 		private void UpdateFilePathsUi()
