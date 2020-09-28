@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,6 +33,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <LangVersion>8.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="McTools.Xrm.Connection, Version=1.2020.1.29, Culture=neutral, PublicKeyToken=96037217801d9658, processorArchitecture=MSIL">
@@ -252,11 +254,23 @@
     <Compile Include="Control\CodeEditor.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Control\DeletableMenuItem.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Control\DeletableMenuItem.Designer.cs">
+      <DependentUpon>DeletableMenuItem.cs</DependentUpon>
+    </Compile>
     <Compile Include="Control\EntitySelectorForms.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Control\EntitySelectorForms.Designer.cs">
       <DependentUpon>EntitySelectorForms.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Control\MenuPanel.cs">
+      <SubType>UserControl</SubType>
+    </Compile>
+    <Compile Include="Control\MenuPanel.Designer.cs">
+      <DependentUpon>MenuPanel.cs</DependentUpon>
     </Compile>
     <Compile Include="Control\TemplateEditor.cs">
       <SubType>UserControl</SubType>
@@ -286,6 +300,7 @@
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\FileHelpers.cs" />
     <Compile Include="Helpers\Status.cs" />
+    <Compile Include="Helpers\UiHelper.cs" />
     <Compile Include="Helpers\WindowExtensions.cs" />
     <Compile Include="Helpers\WorkerHelper.cs" />
     <Compile Include="Helpers\WpfHelpers.cs" />
@@ -331,8 +346,14 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Control\DeletableMenuItem.resx">
+      <DependentUpon>DeletableMenuItem.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Control\EntitySelectorForms.resx">
       <DependentUpon>EntitySelectorForms.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Control\MenuPanel.resx">
+      <DependentUpon>MenuPanel.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Control\TemplateEditor.resx">
       <DependentUpon>TemplateEditor.cs</DependentUpon>

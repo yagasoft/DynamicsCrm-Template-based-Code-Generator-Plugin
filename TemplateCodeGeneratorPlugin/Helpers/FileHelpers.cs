@@ -16,15 +16,15 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Helpers
 	public class FileHelper
 	{
 		private readonly PluginSettings pluginSettings;
-		private readonly Action saveCallback;
+		private readonly Action<SavedFileType, SavedFileGroup> saveCallback;
 
-		public FileHelper(PluginSettings pluginSettings, Action saveCallback)
+		public FileHelper(PluginSettings pluginSettings, Action<SavedFileType, SavedFileGroup> saveCallback)
 		{
 			this.pluginSettings = pluginSettings;
 			this.saveCallback = saveCallback;
 		}
 
-		public void SaveFile(string title, string fileTypeName, string fileExtension, string defaultFileName,
+		public SavedFileGroup SaveFile(string title, string fileTypeName, string fileExtension, string defaultFileName,
 			SavedFileType savedFileType, string textToSave, bool isForceDialogue = false)
 		{
 			var saveDialogue =
@@ -35,20 +35,14 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Helpers
 					Filter = $"{fileTypeName} files (*.{fileExtension})|*.{fileExtension}",
 				};
 
-			var anchorPath = pluginSettings.LatestPath ?? "";
+			SavedFile savedFile = null;
 
-			if (!pluginSettings.SavedFiles.TryGetValue(anchorPath, out var savedFileGroup))
-			{
-				savedFileGroup = new SavedFileGroup();
-				pluginSettings.SavedFiles[anchorPath] = savedFileGroup;
-			}
+			SavedFileGroup savedFileGroup = null;
 
-			if (!savedFileGroup.SavedFiles.TryGetValue(savedFileType, out var savedFile))
-			{
-				savedFile = savedFileGroup.SavedFiles[savedFileType] = new SavedFile();
-			}
-
-			if (savedFile.Path.IsFilled())
+			if (pluginSettings.LatestPath.IsFilled()
+				&& pluginSettings.SavedFiles.TryGetValue(pluginSettings.LatestPath, out savedFileGroup)
+				&& savedFileGroup.SavedFiles.TryGetValue(savedFileType, out savedFile)
+				&& savedFile.Path.IsFilled())
 			{
 				saveDialogue.FileName = savedFile.Path;
 				saveDialogue.InitialDirectory = savedFile.Folder;
@@ -56,16 +50,16 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Helpers
 			else
 			{
 				saveDialogue.FileName = defaultFileName;
-				saveDialogue.InitialDirectory = anchorPath.IsEmpty() ? null : Path.GetDirectoryName(anchorPath);
+				saveDialogue.InitialDirectory = pluginSettings.LatestPath.IsEmpty() ? null : Path.GetDirectoryName(pluginSettings.LatestPath);
 			}
 
-			if (isForceDialogue || savedFile.Path.IsEmpty())
+			if (isForceDialogue || savedFile?.Path.IsEmpty() != false)
 			{
 				var result = saveDialogue.ShowDialog();
 
 				if (result != DialogResult.OK || saveDialogue.FileName.IsEmpty())
 				{
-					return;
+					return null;
 				}
 
 				if (!Path.HasExtension(saveDialogue.FileName))
@@ -80,18 +74,33 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Helpers
 				stream.Write(array, 0, array.Length);
 			}
 
-			savedFile.Folder = Path.GetDirectoryName(saveDialogue.FileName);
-			savedFile.File = Path.GetFileName(saveDialogue.FileName);
+			savedFile =
+				new SavedFile
+				{
+					Folder = Path.GetDirectoryName(saveDialogue.FileName),
+					File = Path.GetFileName(saveDialogue.FileName)
+				};
 
-			if (savedFileType == SavedFileType.Settings && savedFile.Path != anchorPath)
+			if (savedFileType == SavedFileType.Settings)
 			{
-				anchorPath = savedFile.Path;
-				pluginSettings.LatestPath = anchorPath;
-				pluginSettings.SavedFiles[anchorPath] = savedFileGroup;
+				pluginSettings.LatestPath = savedFile.Path;
+			}
+
+			if (pluginSettings.LatestPath.IsFilled() && !pluginSettings.SavedFiles.TryGetValue(pluginSettings.LatestPath, out savedFileGroup))
+			{
+				savedFileGroup = new SavedFileGroup();
+				pluginSettings.SavedFiles[pluginSettings.LatestPath] = savedFileGroup;
+			}
+
+			if (savedFileGroup != null)
+			{
+				savedFileGroup.SavedFiles[savedFileType] = savedFile;
 			}
 
 			SettingsManager.Instance.Save(typeof(TemplateCodeGeneratorPlugin), pluginSettings);
-			saveCallback();
+			saveCallback(savedFileType, savedFileGroup);
+
+			return savedFileGroup;
 		}
 
 		public string LoadFile(string title, string fileTypeName, string fileExtension, SavedFileType savedFileType)
@@ -103,27 +112,19 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Helpers
 					Filter = $"{fileTypeName} files (*.{fileExtension})|*.{fileExtension}",
 				};
 
-			var anchorPath = pluginSettings.LatestPath ?? "";
+			SavedFileGroup savedFileGroup = null;
 
-			if (!pluginSettings.SavedFiles.TryGetValue(anchorPath, out var savedFileGroup))
-			{
-				savedFileGroup = new SavedFileGroup();
-				pluginSettings.SavedFiles[anchorPath] = savedFileGroup;
-			}
-
-			if (!savedFileGroup.SavedFiles.TryGetValue(savedFileType, out var savedFile))
-			{
-				savedFile = savedFileGroup.SavedFiles[savedFileType] = new SavedFile();
-			}
-
-			if (savedFile.Path.IsFilled())
+			if (pluginSettings.LatestPath.IsFilled()
+				&& pluginSettings.SavedFiles.TryGetValue(pluginSettings.LatestPath, out savedFileGroup)
+				&& savedFileGroup.SavedFiles.TryGetValue(savedFileType, out var savedFile)
+				&& savedFile.Path.IsFilled())
 			{
 				openDialogue.FileName = savedFile.Path;
 				openDialogue.InitialDirectory = savedFile.Folder;
 			}
 			else
 			{
-				openDialogue.InitialDirectory = anchorPath.IsEmpty() ? null : Path.GetDirectoryName(anchorPath);
+				openDialogue.InitialDirectory = pluginSettings.LatestPath.IsEmpty() ? null : Path.GetDirectoryName(pluginSettings.LatestPath);
 			}
 
 			var result = openDialogue.ShowDialog();
@@ -140,8 +141,31 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Helpers
 				text = reader.ReadToEnd();
 			}
 
-			savedFile.Folder = Path.GetDirectoryName(openDialogue.FileName);
-			savedFile.File = Path.GetFileName(openDialogue.FileName);
+			var folder = Path.GetDirectoryName(openDialogue.FileName);
+			var file = Path.GetFileName(openDialogue.FileName);
+			savedFile =
+				new SavedFile
+				{
+					Folder = folder,
+					File = file
+				};
+
+			if (savedFileType == SavedFileType.Settings)
+			{
+				pluginSettings.LatestPath = savedFile.Path;
+			}
+
+			if (pluginSettings.LatestPath.IsFilled() && !pluginSettings.SavedFiles.TryGetValue(pluginSettings.LatestPath, out savedFileGroup))
+			{
+				savedFileGroup = new SavedFileGroup();
+				pluginSettings.SavedFiles[pluginSettings.LatestPath] = savedFileGroup;
+			}
+
+			if (savedFileGroup != null)
+			{
+				savedFileGroup.SavedFiles[savedFileType] = savedFile;
+			}
+
 			SettingsManager.Instance.Save(typeof(TemplateCodeGeneratorPlugin), pluginSettings);
 
 			return text;

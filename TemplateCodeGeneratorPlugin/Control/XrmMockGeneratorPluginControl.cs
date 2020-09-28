@@ -2,27 +2,20 @@
 
 using System;
 using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Data.Linq;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Threading;
 using CrmCodeGenerator.VSPackage.Dialogs;
+using CrmCodeGenerator.VSPackage.Helpers;
 using Microsoft.VisualStudio.TextTemplating;
 using Microsoft.Xrm.Sdk;
-using Microsoft.Xrm.Sdk.Messages;
-using Microsoft.Xrm.Sdk.Metadata;
-using Microsoft.Xrm.Sdk.Metadata.Query;
 using Newtonsoft.Json;
-using ScintillaNET;
 using XrmToolBox.Extensibility;
 using XrmToolBox.Extensibility.Args;
 using XrmToolBox.Extensibility.Interfaces;
@@ -31,20 +24,15 @@ using Yagasoft.CrmCodeGenerator.Connection.OrgSvcs;
 using Yagasoft.CrmCodeGenerator.Mapper;
 using Yagasoft.CrmCodeGenerator.Models.Cache;
 using Yagasoft.CrmCodeGenerator.Models.Mapper;
-using Yagasoft.CrmCodeGenerator.Models.Messages;
 using Yagasoft.CrmCodeGenerator.Models.Settings;
 using Yagasoft.Libraries.Common;
 using Yagasoft.TemplateCodeGeneratorPlugin.Helpers;
 using Yagasoft.TemplateCodeGeneratorPlugin.Model;
 using Yagasoft.TemplateCodeGeneratorPlugin.Model.Settings;
 using Yagasoft.TemplateCodeGeneratorPlugin.Model.Settings.File;
-using Yagasoft.TemplateCodeGeneratorPlugin.Model.ViewModel;
 using Yagasoft.TemplateCodeGeneratorPlugin.Model.ViewModels;
 using Yagasoft.TemplateCodeGeneratorPlugin.Templates;
 using Label = System.Windows.Forms.Label;
-using MessageBox = System.Windows.Forms.MessageBox;
-using Status = CrmCodeGenerator.VSPackage.Helpers.Status;
-using Style = System.Windows.Style;
 
 #endregion
 
@@ -77,7 +65,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 		private LinkLabel linkDownVs;
 
 		private Settings settings;
-		
+
 		////private bool settingsSaved;
 		private Button buttonCancel;
 
@@ -85,7 +73,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 		private readonly MetadataCache metadataCache = new MetadataCache();
 		private TableLayoutPanel tableLayoutMainPanel;
 		private TableLayoutPanel tableLayoutPanel2;
-		private Panel panel1;
+		private Panel panelNamespace;
 		private Label labelNamespace;
 		private TextBox textBoxNamespace;
 		private Panel panelHost;
@@ -95,21 +83,31 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 		private ToolStripButton buttonTemplateEditor;
 		private Label labelSettingsPath;
 
+		private ToolStripButton buttonOptions;
+		private Panel panelLinks;
+		private LinkLabel labelLinkSeparator;
+		private LinkLabel linkQuickGuide;
+		private Panel panelToast;
+		private Label labelToast;
+		private ToolStripButton buttonHistory;
+
 		// load T4 Generator required assemblies
 		private RefreshMode dummy1 = RefreshMode.KeepChanges;
 
+		private PluginSettings pluginSettings;
+
+		private EntitySelectorForms entitySelector;
+
 		private TemplateEditor templateEditor;
 		private readonly TemplateViewModel templateViewModel;
-		private PluginSettings pluginSettings;
-		private readonly FileHelper fileHelper;
-		private EntitySelectorForms entitySelector;
-		private readonly ConnectionManager connectionManager;
-		private ToolStripButton buttonOptions;
-		private Panel panel2;
-		private LinkLabel linkLabel2;
-		private LinkLabel linkQuickGuide;
+
 		private readonly WorkerHelper workerHelper;
-		
+		private readonly ConnectionManager connectionManager;
+		private readonly FileHelper fileHelper;
+		private ToolStripButton buttonDefaultT4;
+		private ToolStripLabel labelYagasoft;
+		private readonly UiHelper uiHelper;
+
 		#region Base tool implementation
 
 		public PluginControl()
@@ -123,12 +121,33 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 				(s, work, callback) => Invoke(new Action(() => RunAsync(s, work, callback))));
 			connectionManager = new ConnectionManager(() => Service);
 			fileHelper = new FileHelper(pluginSettings,
-				() =>
+				(filetype, savedFileGroup) =>
 				{
+					var templateFile = savedFileGroup.SavedFiles.FirstNotNullOrDefault(SavedFileType.Template) ?? new SavedFile();
+					var path = templateEditor.LabelTemplatePath.Text;
+
+					if (path.IsFilled() && !Regex.IsMatch(path, @"<.*?>"))
+					{
+						templateFile.Folder = Path.GetDirectoryName(path);
+						templateFile.File = Path.GetFileName(path);
+						savedFileGroup.SavedFiles[SavedFileType.Template] = templateFile;
+					}
+
+					var codeFile = savedFileGroup.SavedFiles.FirstNotNullOrDefault(SavedFileType.Code) ?? new SavedFile();
+					path = templateEditor.LabelCodePath.Text;
+
+					if (path.IsFilled() && !Regex.IsMatch(path, @"<.*?>"))
+					{
+						codeFile.Folder = Path.GetDirectoryName(path);
+						codeFile.File = Path.GetFileName(path);
+						savedFileGroup.SavedFiles[SavedFileType.Code] = templateFile;
+					}
+
 					UpdateFilePathsUi();
-					MessageBox.Show("File saved.");
+					uiHelper.ShowToast($"{filetype} saved.");
 				});
 			templateViewModel = new TemplateViewModel();
+			uiHelper = new UiHelper(panelToast, labelToast, action => Invoke(action));
 		}
 
 		private void LoadPluginSettings()
@@ -142,10 +161,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 				// ignored
 			}
 
-			if (pluginSettings == null)
-			{
-				pluginSettings = new PluginSettings();
-			}
+			pluginSettings ??= new PluginSettings();
 
 			var nonExistentFiles = pluginSettings.SavedFiles
 				.Where(e => !File.Exists(e.Key)).Select(e => e.Key).ToArray();
@@ -154,6 +170,12 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			foreach (var group in nonExistentFiles)
 			{
 				pluginSettings.SavedFiles.Remove(group);
+			}
+
+			if (!pluginSettings.SavedFiles.ContainsKey(pluginSettings.LatestPath ?? ""))
+			{
+				pluginSettings.LatestPath = pluginSettings.SavedFiles.FirstOrDefault().Value?.SavedFiles
+					.FirstNotNullOrDefault(SavedFileType.Settings)?.Path;
 			}
 		}
 
@@ -179,7 +201,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			{
 				savedSettings = File.ReadAllText(pluginSettings.LatestPath);
 			}
-			
+
 			if (!info.Cancel && settings != null && memorySettings != savedSettings)
 			{
 				if (!PromptSave("Settings"))
@@ -238,12 +260,14 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.buttonCloseTool = new System.Windows.Forms.ToolStripButton();
 			this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
 			this.buttonEntitySelector = new System.Windows.Forms.ToolStripButton();
-			this.buttonTemplateEditor = new System.Windows.Forms.ToolStripButton();
+			this.buttonFetchData = new System.Windows.Forms.ToolStripButton();
 			this.buttonOptions = new System.Windows.Forms.ToolStripButton();
 			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
-			this.buttonFetchData = new System.Windows.Forms.ToolStripButton();
+			this.buttonTemplateEditor = new System.Windows.Forms.ToolStripButton();
+			this.buttonDefaultT4 = new System.Windows.Forms.ToolStripButton();
 			this.buttonGenerate = new System.Windows.Forms.ToolStripButton();
 			this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+			this.buttonHistory = new System.Windows.Forms.ToolStripButton();
 			this.buttonLoadSettings = new System.Windows.Forms.ToolStripButton();
 			this.buttonSaveAsSettings = new System.Windows.Forms.ToolStripButton();
 			this.buttonSaveSettings = new System.Windows.Forms.ToolStripButton();
@@ -255,18 +279,22 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.tableLayoutMainPanel = new System.Windows.Forms.TableLayoutPanel();
 			this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
 			this.labelSettingsPath = new System.Windows.Forms.Label();
-			this.panel1 = new System.Windows.Forms.Panel();
+			this.panelNamespace = new System.Windows.Forms.Panel();
 			this.labelNamespace = new System.Windows.Forms.Label();
 			this.textBoxNamespace = new System.Windows.Forms.TextBox();
-			this.panel2 = new System.Windows.Forms.Panel();
-			this.linkLabel2 = new System.Windows.Forms.LinkLabel();
+			this.panelLinks = new System.Windows.Forms.Panel();
+			this.labelLinkSeparator = new System.Windows.Forms.LinkLabel();
 			this.linkQuickGuide = new System.Windows.Forms.LinkLabel();
 			this.panelHost = new System.Windows.Forms.Panel();
+			this.panelToast = new System.Windows.Forms.Panel();
+			this.labelToast = new System.Windows.Forms.Label();
+			this.labelYagasoft = new System.Windows.Forms.ToolStripLabel();
 			this.toolBar.SuspendLayout();
 			this.tableLayoutMainPanel.SuspendLayout();
 			this.tableLayoutPanel2.SuspendLayout();
-			this.panel1.SuspendLayout();
-			this.panel2.SuspendLayout();
+			this.panelNamespace.SuspendLayout();
+			this.panelLinks.SuspendLayout();
+			this.panelToast.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// toolBar
@@ -279,14 +307,17 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
             this.buttonOptions,
             this.toolStripSeparator1,
             this.buttonTemplateEditor,
+            this.buttonDefaultT4,
             this.buttonGenerate,
             this.toolStripSeparator2,
+            this.buttonHistory,
             this.buttonLoadSettings,
             this.buttonSaveAsSettings,
             this.buttonSaveSettings,
             this.toolStripSeparator3,
             this.buttonClearCache,
-            this.toolStripSeparator5});
+            this.toolStripSeparator5,
+            this.labelYagasoft});
 			this.toolBar.Location = new System.Drawing.Point(0, 0);
 			this.toolBar.Name = "toolBar";
 			this.toolBar.Size = new System.Drawing.Size(1000, 25);
@@ -316,14 +347,15 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.buttonEntitySelector.Text = "Select Entities";
 			this.buttonEntitySelector.Click += new System.EventHandler(this.buttonEntitySelector_Click);
 			// 
-			// buttonTemplateEditor
+			// buttonFetchData
 			// 
-			this.buttonTemplateEditor.Image = ((System.Drawing.Image)(resources.GetObject("buttonTemplateEditor.Image")));
-			this.buttonTemplateEditor.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this.buttonTemplateEditor.Name = "buttonTemplateEditor";
-			this.buttonTemplateEditor.Size = new System.Drawing.Size(75, 22);
-			this.buttonTemplateEditor.Text = "Template";
-			this.buttonTemplateEditor.Click += new System.EventHandler(this.buttonTemplateEditor_Click);
+			this.buttonFetchData.Enabled = false;
+			this.buttonFetchData.Image = ((System.Drawing.Image)(resources.GetObject("buttonFetchData.Image")));
+			this.buttonFetchData.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.buttonFetchData.Name = "buttonFetchData";
+			this.buttonFetchData.Size = new System.Drawing.Size(83, 22);
+			this.buttonFetchData.Text = "Fetch Data";
+			this.buttonFetchData.Click += new System.EventHandler(this.buttonFetchData_Click);
 			// 
 			// buttonOptions
 			// 
@@ -339,15 +371,23 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.toolStripSeparator1.Name = "toolStripSeparator1";
 			this.toolStripSeparator1.Size = new System.Drawing.Size(6, 25);
 			// 
-			// buttonFetchData
+			// buttonTemplateEditor
 			// 
-			this.buttonFetchData.Enabled = false;
-			this.buttonFetchData.Image = ((System.Drawing.Image)(resources.GetObject("buttonFetchData.Image")));
-			this.buttonFetchData.ImageTransparentColor = System.Drawing.Color.Magenta;
-			this.buttonFetchData.Name = "buttonFetchData";
-			this.buttonFetchData.Size = new System.Drawing.Size(83, 22);
-			this.buttonFetchData.Text = "Fetch Data";
-			this.buttonFetchData.Click += new System.EventHandler(this.buttonFetchData_Click);
+			this.buttonTemplateEditor.Image = ((System.Drawing.Image)(resources.GetObject("buttonTemplateEditor.Image")));
+			this.buttonTemplateEditor.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.buttonTemplateEditor.Name = "buttonTemplateEditor";
+			this.buttonTemplateEditor.Size = new System.Drawing.Size(75, 22);
+			this.buttonTemplateEditor.Text = "Template";
+			this.buttonTemplateEditor.Click += new System.EventHandler(this.buttonTemplateEditor_Click);
+			// 
+			// buttonDefaultT4
+			// 
+			this.buttonDefaultT4.Image = ((System.Drawing.Image)(resources.GetObject("buttonDefaultT4.Image")));
+			this.buttonDefaultT4.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.buttonDefaultT4.Name = "buttonDefaultT4";
+			this.buttonDefaultT4.Size = new System.Drawing.Size(55, 22);
+			this.buttonDefaultT4.Text = "Reset";
+			this.buttonDefaultT4.Click += new System.EventHandler(this.buttonDefaultT4_Click);
 			// 
 			// buttonGenerate
 			// 
@@ -363,6 +403,16 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			// 
 			this.toolStripSeparator2.Name = "toolStripSeparator2";
 			this.toolStripSeparator2.Size = new System.Drawing.Size(6, 25);
+			// 
+			// buttonHistory
+			// 
+			this.buttonHistory.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Image;
+			this.buttonHistory.Image = ((System.Drawing.Image)(resources.GetObject("buttonHistory.Image")));
+			this.buttonHistory.ImageTransparentColor = System.Drawing.Color.Magenta;
+			this.buttonHistory.Name = "buttonHistory";
+			this.buttonHistory.Size = new System.Drawing.Size(23, 22);
+			this.buttonHistory.Text = "History";
+			this.buttonHistory.Click += new System.EventHandler(this.buttonHistory_Click);
 			// 
 			// buttonLoadSettings
 			// 
@@ -415,6 +465,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.linkDownVs.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.linkDownVs.AutoSize = true;
+			this.linkDownVs.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
 			this.linkDownVs.Location = new System.Drawing.Point(90, 3);
 			this.linkDownVs.Name = "linkDownVs";
 			this.linkDownVs.Size = new System.Drawing.Size(121, 13);
@@ -433,7 +484,6 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.buttonCancel.TabIndex = 21;
 			this.buttonCancel.Text = "Cancel";
 			this.buttonCancel.UseVisualStyleBackColor = true;
-			this.buttonCancel.Visible = false;
 			this.buttonCancel.Click += new System.EventHandler(this.buttonCancel_Click);
 			// 
 			// tableLayoutMainPanel
@@ -448,6 +498,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.tableLayoutMainPanel.RowCount = 2;
 			this.tableLayoutMainPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 32F));
 			this.tableLayoutMainPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Percent, 100F));
+			this.tableLayoutMainPanel.RowStyles.Add(new System.Windows.Forms.RowStyle(System.Windows.Forms.SizeType.Absolute, 20F));
 			this.tableLayoutMainPanel.Size = new System.Drawing.Size(1000, 416);
 			this.tableLayoutMainPanel.TabIndex = 22;
 			// 
@@ -458,8 +509,8 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
 			this.tableLayoutPanel2.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Absolute, 220F));
 			this.tableLayoutPanel2.Controls.Add(this.labelSettingsPath, 1, 0);
-			this.tableLayoutPanel2.Controls.Add(this.panel1, 0, 0);
-			this.tableLayoutPanel2.Controls.Add(this.panel2, 2, 0);
+			this.tableLayoutPanel2.Controls.Add(this.panelNamespace, 0, 0);
+			this.tableLayoutPanel2.Controls.Add(this.panelLinks, 2, 0);
 			this.tableLayoutPanel2.Dock = System.Windows.Forms.DockStyle.Fill;
 			this.tableLayoutPanel2.Location = new System.Drawing.Point(3, 3);
 			this.tableLayoutPanel2.Name = "tableLayoutPanel2";
@@ -481,15 +532,15 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.labelSettingsPath.Text = "<settings-path>";
 			this.labelSettingsPath.TextAlign = System.Drawing.ContentAlignment.MiddleLeft;
 			// 
-			// panel1
+			// panelNamespace
 			// 
-			this.panel1.Controls.Add(this.labelNamespace);
-			this.panel1.Controls.Add(this.textBoxNamespace);
-			this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.panel1.Location = new System.Drawing.Point(3, 3);
-			this.panel1.Name = "panel1";
-			this.panel1.Size = new System.Drawing.Size(244, 20);
-			this.panel1.TabIndex = 0;
+			this.panelNamespace.Controls.Add(this.labelNamespace);
+			this.panelNamespace.Controls.Add(this.textBoxNamespace);
+			this.panelNamespace.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.panelNamespace.Location = new System.Drawing.Point(3, 3);
+			this.panelNamespace.Name = "panelNamespace";
+			this.panelNamespace.Size = new System.Drawing.Size(244, 20);
+			this.panelNamespace.TabIndex = 0;
 			// 
 			// labelNamespace
 			// 
@@ -514,35 +565,36 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.textBoxNamespace.TabIndex = 17;
 			this.textBoxNamespace.TextChanged += new System.EventHandler(this.textBoxNamespace_TextChanged);
 			// 
-			// panel2
+			// panelLinks
 			// 
-			this.panel2.Controls.Add(this.linkLabel2);
-			this.panel2.Controls.Add(this.linkQuickGuide);
-			this.panel2.Controls.Add(this.linkDownVs);
-			this.panel2.Dock = System.Windows.Forms.DockStyle.Fill;
-			this.panel2.Location = new System.Drawing.Point(777, 3);
-			this.panel2.Name = "panel2";
-			this.panel2.Size = new System.Drawing.Size(214, 20);
-			this.panel2.TabIndex = 2;
+			this.panelLinks.Controls.Add(this.labelLinkSeparator);
+			this.panelLinks.Controls.Add(this.linkQuickGuide);
+			this.panelLinks.Controls.Add(this.linkDownVs);
+			this.panelLinks.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.panelLinks.Location = new System.Drawing.Point(777, 3);
+			this.panelLinks.Name = "panelLinks";
+			this.panelLinks.Size = new System.Drawing.Size(214, 20);
+			this.panelLinks.TabIndex = 2;
 			// 
-			// linkLabel2
+			// labelLinkSeparator
 			// 
-			this.linkLabel2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+			this.labelLinkSeparator.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
-			this.linkLabel2.AutoSize = true;
-			this.linkLabel2.Location = new System.Drawing.Point(75, 3);
-			this.linkLabel2.Name = "linkLabel2";
-			this.linkLabel2.Size = new System.Drawing.Size(9, 13);
-			this.linkLabel2.TabIndex = 22;
-			this.linkLabel2.TabStop = true;
-			this.linkLabel2.Text = "|";
-			this.linkLabel2.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this.labelLinkSeparator.AutoSize = true;
+			this.labelLinkSeparator.Location = new System.Drawing.Point(75, 3);
+			this.labelLinkSeparator.Name = "labelLinkSeparator";
+			this.labelLinkSeparator.Size = new System.Drawing.Size(9, 13);
+			this.labelLinkSeparator.TabIndex = 22;
+			this.labelLinkSeparator.TabStop = true;
+			this.labelLinkSeparator.Text = "|";
+			this.labelLinkSeparator.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
 			// 
 			// linkQuickGuide
 			// 
 			this.linkQuickGuide.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
 			this.linkQuickGuide.AutoSize = true;
+			this.linkQuickGuide.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
 			this.linkQuickGuide.Location = new System.Drawing.Point(3, 3);
 			this.linkQuickGuide.Name = "linkQuickGuide";
 			this.linkQuickGuide.Size = new System.Drawing.Size(66, 13);
@@ -560,8 +612,49 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.panelHost.Size = new System.Drawing.Size(994, 378);
 			this.panelHost.TabIndex = 1;
 			// 
+			// panelToast
+			// 
+			this.panelToast.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+			this.panelToast.BackColor = System.Drawing.Color.Black;
+			this.panelToast.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+			this.panelToast.Controls.Add(this.labelToast);
+			this.panelToast.ForeColor = System.Drawing.Color.Black;
+			this.panelToast.Location = new System.Drawing.Point(741, 341);
+			this.panelToast.Name = "panelToast";
+			this.panelToast.Size = new System.Drawing.Size(250, 65);
+			this.panelToast.TabIndex = 0;
+			this.panelToast.Visible = false;
+			// 
+			// labelToast
+			// 
+			this.labelToast.AutoEllipsis = true;
+			this.labelToast.BackColor = System.Drawing.Color.DarkViolet;
+			this.labelToast.Dock = System.Windows.Forms.DockStyle.Fill;
+			this.labelToast.Font = new System.Drawing.Font("Microsoft Sans Serif", 12F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+			this.labelToast.ForeColor = System.Drawing.Color.White;
+			this.labelToast.Location = new System.Drawing.Point(0, 0);
+			this.labelToast.Name = "labelToast";
+			this.labelToast.Size = new System.Drawing.Size(248, 63);
+			this.labelToast.TabIndex = 0;
+			this.labelToast.Text = "<toast>";
+			this.labelToast.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			// 
+			// labelYagasoft
+			// 
+			this.labelYagasoft.Font = new System.Drawing.Font("Verdana", 8F, System.Drawing.FontStyle.Bold);
+			this.labelYagasoft.ForeColor = System.Drawing.Color.DarkViolet;
+			this.labelYagasoft.IsLink = true;
+			this.labelYagasoft.LinkBehavior = System.Windows.Forms.LinkBehavior.HoverUnderline;
+			this.labelYagasoft.LinkColor = System.Drawing.Color.DarkViolet;
+			this.labelYagasoft.Name = "labelYagasoft";
+			this.labelYagasoft.Size = new System.Drawing.Size(95, 22);
+			this.labelYagasoft.Text = "Yagasoft.com";
+			this.labelYagasoft.VisitedLinkColor = System.Drawing.Color.DarkBlue;
+			this.labelYagasoft.Click += new System.EventHandler(this.labelYagasoft_Click);
+			// 
 			// PluginControl
 			// 
+			this.Controls.Add(this.panelToast);
 			this.Controls.Add(this.tableLayoutMainPanel);
 			this.Controls.Add(this.buttonCancel);
 			this.Controls.Add(this.toolBar);
@@ -573,10 +666,11 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			this.tableLayoutMainPanel.ResumeLayout(false);
 			this.tableLayoutPanel2.ResumeLayout(false);
 			this.tableLayoutPanel2.PerformLayout();
-			this.panel1.ResumeLayout(false);
-			this.panel1.PerformLayout();
-			this.panel2.ResumeLayout(false);
-			this.panel2.PerformLayout();
+			this.panelNamespace.ResumeLayout(false);
+			this.panelNamespace.PerformLayout();
+			this.panelLinks.ResumeLayout(false);
+			this.panelLinks.PerformLayout();
+			this.panelToast.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 
@@ -590,32 +684,13 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 
 		private void PluginControl_Load(object sender, EventArgs e)
 		{
+			buttonCancel.Hide();
+
 			templateEditor = new TemplateEditor(templateViewModel, fileHelper, ParentForm, workerHelper);
 			entitySelector = new EntitySelectorForms(connectionManager, metadataCache, workerHelper);
 
-			var savedFile = fileHelper.GetSavedFileInfo(SavedFileType.Template);
-
-			if (savedFile?.Path?.IsFilled() != true)
-			{
-				templateViewModel.CodeEditorT4.Text = DefaultTemplate.Text;
-			}
-
-			savedFile = fileHelper.GetSavedFileInfo(SavedFileType.Settings);
-
-			if (savedFile?.Path?.IsFilled() == true)
-			{
-				try
-				{
-					ProcessSavedSettings(File.ReadAllText(savedFile.Path));
-				}
-				catch (Exception ex)
-				{
-					Status.PopException(Dispatcher.CurrentDispatcher, $"Failed to process saved settings => {ex.Message}");
-				}
-			}
-
+			LoadSavedSettings();
 			ShowTemplateEditor();
-			UpdateFilePathsUi();
 		}
 
 		private void buttonEntitySelector_Click(object sender, EventArgs e)
@@ -661,8 +736,11 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			var text = JsonConvert.SerializeObject(settings, Formatting.Indented,
 				new JsonSerializerSettings { DefaultValueHandling = DefaultValueHandling.IgnoreAndPopulate });
 
-			fileHelper.SaveFile("Save settings ...", "JSON", "json", "CrmSchema-Config.json",
+			var savedFileGroup = fileHelper.SaveFile("Save settings ...", "JSON", "json", "CrmSchema-Config.json",
 				SavedFileType.Settings, text, true);
+
+			savedFileGroup.SavedFiles.Remove(SavedFileType.Code);
+			UpdateFilePathsUi();
 
 			////SettingsSaved = true;
 		}
@@ -670,18 +748,73 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 		private void buttonLoadSettings_Click(object sender, EventArgs e)
 		{
 			var text = fileHelper.LoadFile("Load settings ...", "JSON", "json", SavedFileType.Settings);
-			ProcessSavedSettings(text);
+
+			if (text.IsFilled())
+			{
+				ProcessSavedSettings(text);
+			}
+		}
+
+		private void buttonHistory_Click(object sender, EventArgs e)
+		{
+			using var form = new Form();
+			var control = new MenuPanel(pluginSettings.SavedFiles
+				.OrderBy(s => s.Key)
+				.ToDictionary(s => (object)s.Value, s => s.Key),
+				pluginSettings.SavedFiles.FirstNotNullOrDefault(pluginSettings.LatestPath ?? ""));
+
+			control.ItemClicked +=
+				(s, a) =>
+				{
+					if (a?.Value is SavedFileGroup savedGroup)
+					{
+						pluginSettings.LatestPath = savedGroup.SavedFiles[SavedFileType.Settings].Path;
+						LoadSavedSettings();
+						form.Close();
+					}
+				};
+
+			control.ItemDeleted +=
+				(s, a) =>
+				{
+					pluginSettings.SavedFiles.Remove(a.Label);
+
+					if (pluginSettings.LatestPath == a.Label)
+					{
+						pluginSettings.LatestPath = pluginSettings.SavedFiles.FirstOrDefault().Value?.SavedFiles
+							.FirstNotNullOrDefault(SavedFileType.Settings)?.Path;
+					}
+				};
+
+			form.Controls.Add(control);
+
+			form.AutoSize = true;
+			form.AutoSizeMode = AutoSizeMode.GrowAndShrink;
+
+			form.FormBorderStyle = FormBorderStyle.None;
+			form.ShowInTaskbar = false;
+
+			form.StartPosition = FormStartPosition.Manual;
+			form.Location = new Point(MousePosition.X, MousePosition.Y);
+
+			form.ShowDialog();
 		}
 
 		private void buttonClearCache_Click(object sender, EventArgs e)
 		{
 			metadataCache.Clear();
+			uiHelper.ShowToast("Cache cleared.");
 		}
 
 		private void textBoxNamespace_TextChanged(object sender, EventArgs e)
 		{
 			settings.Namespace = textBoxNamespace.Text;
 			////SettingsSaved = false;
+		}
+
+		private void labelYagasoft_Click(object sender, EventArgs e)
+		{
+			Process.Start(new ProcessStartInfo("http://yagasoft.com"));
 		}
 
 		private void linkDownVs_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -698,37 +831,83 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 		{
 			if (mapper != null)
 			{
+				uiHelper.ShowToast("Cancelling generation ...");
 				mapper.CancelMapping = true;
+			}
+		}
+
+		private void buttonDefaultT4_Click(object sender, EventArgs e)
+		{
+			var result = MessageBox.Show($"Resetting the template will overwrite the one in the editor. Are you sure you want to proceed?",
+				$"Template Reset", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+
+			if (result == DialogResult.Yes)
+			{
+				templateViewModel.CodeEditorT4.Text = DefaultTemplate.Text;
+				uiHelper.ShowToast("Template text has been reset to the default.");
 			}
 		}
 
 		#endregion
 
-		private void ProcessSavedSettings(string text)
+		private void LoadSavedSettings()
 		{
-			if (text.IsFilled())
+			var savedFile = fileHelper.GetSavedFileInfo(SavedFileType.Settings);
+			var isSettingsDefined = savedFile?.Path?.IsFilled() != true;
+
+			if (isSettingsDefined)
+			{
+				if (!templateViewModel.CodeEditorT4.Text.IsFilled())
+				{
+					templateViewModel.CodeEditorT4.Text = DefaultTemplate.Text;
+				}
+			}
+
+			try
+			{
+				ProcessSavedSettings(isSettingsDefined ? null : File.ReadAllText(savedFile.Path));
+			}
+			catch (Exception ex)
+			{
+				Status.PopException(Dispatcher.CurrentDispatcher, $"Failed to process saved settings => {ex.Message}");
+			}
+		}
+
+		private void ProcessSavedSettings(string text = null)
+		{
+			if (text?.IsFilled() == true)
 			{
 				settings = JsonConvert.DeserializeObject<Settings>(text);
 			}
 
+			var isNew = settings == null;
+
 			if (settings == null)
 			{
 				CreateNewSettings();
+				uiHelper.ShowToast("Created new settings.");
 			}
 
 			if (settings.SettingsVersion.IsFilled() && new Version(settings.SettingsVersion) > new Version(Constants.SettingsVersion))
 			{
-				throw new NotSupportedException("Settings verion is not supported by this plugin. To protect the file, loading has been aborted.");
+				throw new NotSupportedException(
+					"Settings verion is not supported by this plugin. To protect the file, loading has been aborted.");
 			}
 
 			settings.Threads = 1;
-			settings.EntitiesPerThread = 999;
+			settings.EntitiesPerThread = 9999;
 			textBoxNamespace.Text = settings.Namespace;
 
 			entitySelector.Settings = settings;
 
-			if (templateViewModel.CodeEditorT4.Text.IsFilled())
+			if (!templateViewModel.CodeEditorT4.Text.IsFilled())
 			{
+				templateViewModel.CodeEditorT4.Text = DefaultTemplate.Text;
+			}
+
+			if (isNew)
+			{
+				uiHelper.ShowToast("Settings loaded.");
 				return;
 			}
 
@@ -760,12 +939,14 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 				templateViewModel.CodeEditorT4.Text = File.ReadAllText(savedFile.Path);
 				templateViewModel.T4Saved = true;
 			}
-			else
+			else if (!templateViewModel.CodeEditorT4.Text.IsFilled())
 			{
 				templateViewModel.CodeEditorT4.Text = DefaultTemplate.Text;
 			}
 
 			UpdateFilePathsUi();
+
+			uiHelper.ShowToast("Settings loaded.");
 		}
 
 		private void CreateNewSettings()
@@ -841,11 +1022,13 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 
 		private void GenerateCode()
 		{
+			uiHelper.ShowToast("Generating code ...");
+
 			var template = templateViewModel.CodeEditorT4.Text;
 
 			DisableTool();
 
-			buttonCancel.Visible = true;
+			buttonCancel.Show();
 
 			WorkAsync(
 				new WorkAsyncInfo
@@ -969,6 +1152,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 
 								if (isCancelled)
 								{
+									uiHelper.ShowToast("Generation cancelled.");
 									return;
 								}
 
@@ -990,12 +1174,16 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 									MessageBox.Show(errors, "Generation Errors", MessageBoxButtons.OK,
 										MessageBoxIcon.Error);
 								}
+								else
+								{
+									uiHelper.ShowToast("Code generated.");
+								}
 
 								e.Result = output;
 							}
 							finally
 							{
-								Invoke(new Action(() => buttonCancel.Visible = false));
+								Invoke(new Action(() => buttonCancel.Hide()));
 								EnableTool();
 							}
 						},
@@ -1055,25 +1243,13 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 		private void UpdateFilePathsUi()
 		{
 			var savedFile = fileHelper.GetSavedFileInfo(SavedFileType.Settings);
-
-			if (savedFile != null)
-			{
-				labelSettingsPath.Text = savedFile.Path;
-			}
+			labelSettingsPath.Text = savedFile?.Path ?? "";
 
 			savedFile = fileHelper.GetSavedFileInfo(SavedFileType.Template);
-
-			if (savedFile != null)
-			{
-				templateEditor.LabelTemplatePath.Text = savedFile.Path;
-			}
+			templateEditor.LabelTemplatePath.Text = savedFile?.Path ?? "";
 
 			savedFile = fileHelper.GetSavedFileInfo(SavedFileType.Code);
-
-			if (savedFile != null)
-			{
-				templateEditor.LabelCodePath.Text = savedFile.Path;
-			}
+			templateEditor.LabelCodePath.Text = savedFile?.Path ?? "";
 		}
 
 		private void ShowTemplateEditor()

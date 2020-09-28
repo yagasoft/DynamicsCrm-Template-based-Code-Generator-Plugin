@@ -4,7 +4,7 @@
   <metadata>
     <id>Template-based-CRM-Code-Generator-Plugin</id>
     <title>Early-bound Template-based Code Generator</title>
-    <version>2.0.0.1</version>
+    <version>2.1.0.1</version>
     <authors>Ahmed Elsawalhy</authors>
     <owners>Ahmed Elsawalhy</owners>
     <projectUrl>https://github.com/yagasoft/DynamicsCrm-Template-based-Code-Generator-Plugin</projectUrl>
@@ -42,6 +42,13 @@
     <copyright>Copyright 2020 Ahmed Elsawalhy</copyright>
     <tags>XrmToolBox plugin,tool,CRM,Dynamics,365,yagasoft,xrm,early,bound,code,generate,generator,t4,template</tags>
     <releaseNotes>
+      * 2.1.0.1
+      Added: recent settings list (load history)
+      Added: reset option for the template text
+      Added: toast notification for clearer status
+      Improved: load and save logic
+      Fixed: fixed cancel button
+      Fixed: issues
       * 2.0.0.1
       Added: all missing features from VS extension (click on 'Quick Guide' for more info), except Contracts
       Added: keep track of paths (settings, template, and code) used in previous sessions and the links between them
