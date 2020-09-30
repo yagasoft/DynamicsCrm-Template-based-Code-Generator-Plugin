@@ -3525,7 +3525,7 @@ namespace <#= Context.Namespace ?? ""<namespace>"" #><# /*if (Context.FileName !
 								{<#= item.Value #>, <#= ToLiteral(locLabelTemp == null ? null : locLabelTemp.Label) #>},
 <#+ } #>
 							}
-						}
+						},
 <#+ } #>
 <#+ } #>
 					};
@@ -3980,7 +3980,7 @@ namespace <#= Context.Namespace ?? ""<namespace>"" #><# /*if (Context.FileName !
 						{<#= item.Value #>, <#= ToLiteral(locLabel == null ? null : locLabel.Label) #>},
 <#+ } #>
 					}
-				}
+				},
 <#+ } #>
 <#+ } #>
 			};

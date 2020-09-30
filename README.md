@@ -2,7 +2,7 @@
 
 [![Join the chat at https://gitter.im/yagasoft/DynamicsCrm-TemplateBasedCodeGeneratorPlugin](https://badges.gitter.im/yagasoft/DynamicsCrm-TemplateBasedCodeGeneratorPlugin.svg)](https://gitter.im/yagasoft/DynamicsCrm-TemplateBasedCodeGeneratorPlugin?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-### Version: 2.1.0.1
+### Version: 2.2.1.1
 ---
 
 An XrmToolBox plugin that can be used to generate Early-bound code from a CRM Schema using a customisable T4 Template.
@@ -50,6 +50,9 @@ You can read a quick overview of the tool and its functionality [here](http://bl
 
 ## Changes
 
+#### _v2.2.1.1 (2020-10-01)_
++ Added: Filter Details window row filtering
++ Fixed: generated code 'labels' syntax error
 #### _v2.1.0.1 (2020-09-28)_
 + Added: recent settings list (load history)
 + Added: reset option for the template text
