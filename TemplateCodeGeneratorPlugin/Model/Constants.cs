@@ -4,7 +4,7 @@
 	{
 		public const string AppName = "Dynamics Template-based Code Generator";
 		public const string AppId = "xrmtoolbox-code-gen-plugin";
-		public const string AppVersion = "2.2.1.1";
+		public const string AppVersion = "2.2.2.1";
 
 		public const string SettingsVersion = "2.0.0.1";
 
@@ -18,6 +18,8 @@
 			"    v" + AppVersion + "\r\n" +
 			"~~~~~~~~~~\r\n" +
 			@"
+  * 2.2.2.1
+  Fixed: mishandling errors
   * 2.2.1.1
   Added: Filter Details window row filtering
   Fixed: generated code 'labels' syntax error

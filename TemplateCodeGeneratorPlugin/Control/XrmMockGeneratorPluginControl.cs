@@ -5,10 +5,10 @@ using System.CodeDom.Compiler;
 using System.ComponentModel;
 using System.Data.Linq;
 using System.Diagnostics;
-using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Threading;
 using CrmCodeGenerator.VSPackage.Dialogs;
@@ -24,6 +24,7 @@ using Yagasoft.CrmCodeGenerator.Connection.OrgSvcs;
 using Yagasoft.CrmCodeGenerator.Mapper;
 using Yagasoft.CrmCodeGenerator.Models.Cache;
 using Yagasoft.CrmCodeGenerator.Models.Mapper;
+using Yagasoft.CrmCodeGenerator.Models.Messages;
 using Yagasoft.CrmCodeGenerator.Models.Settings;
 using Yagasoft.Libraries.Common;
 using Yagasoft.TemplateCodeGeneratorPlugin.Helpers;
@@ -33,6 +34,8 @@ using Yagasoft.TemplateCodeGeneratorPlugin.Model.Settings.File;
 using Yagasoft.TemplateCodeGeneratorPlugin.Model.ViewModels;
 using Yagasoft.TemplateCodeGeneratorPlugin.Templates;
 using Label = System.Windows.Forms.Label;
+using MessageBox = System.Windows.Forms.MessageBox;
+using Point = System.Drawing.Point;
 
 #endregion
 
@@ -1047,6 +1050,110 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 					Work =
 						(w, e) =>
 						{
+							Context context = null;
+							var isCancelled = false;
+							var isError = false;
+
+							BusyMessage<Style> MapperOnMessage(object o, MapperEventArgs args)
+							{
+								try
+								{
+									if (args.Exception == null)
+									{
+										var message = $"[Generator] {Regex.Replace(args.Message, "^>> ", "[DONE] ")}";
+										w.ReportProgress(args.Progress ?? -1, message);
+									}
+								}
+								catch
+								{
+									// ignored
+								}
+
+								return null;
+							}
+
+							void MapperOnStatusUpdate(object o, MapperEventArgs args)
+							{
+								try
+								{
+									switch (args.Status)
+									{
+										case MapperStatus.Cancelled:
+											isCancelled = true;
+											UnregisterMapperEvents();
+											break;
+
+										case MapperStatus.Error:
+											isError = true;
+											UnregisterMapperEvents();
+											var message = args.Exception.Message;
+											var inner = args.Exception?.InnerException;
+
+											if (inner?.Message.IsFilled() == true)
+											{
+												message += $" | {inner.Message}";
+											}
+
+											if (args.Exception is NullReferenceException)
+											{
+												message = $"Generator failed. Clear the cache and try again.";
+											}
+
+											MessageBox.Show(message, "Generation Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+											break;
+
+										case MapperStatus.Finished:
+											UnregisterMapperEvents();
+											context = mapper.Context;
+											context.Namespace = settings.Namespace;
+											context.SplitFiles = settings.SplitFiles;
+											context.SplitContractFiles = settings.SplitContractFiles;
+											context.UseDisplayNames = settings.UseDisplayNames;
+											context.IsUseCustomDictionary = settings.IsUseCustomDictionary;
+											context.IsUseCustomEntityReference = settings.IsUseCustomEntityReference;
+											context.IsAddEntityAnnotations = settings.IsAddEntityAnnotations;
+											context.IsAddContractAnnotations = settings.IsAddContractAnnotations;
+											context.IsGenerateLoadPerRelation = settings.IsGenerateLoadPerRelation;
+											context.IsGenerateEnumNames = settings.IsGenerateEnumNames;
+											context.IsGenerateEnumLabels = settings.IsGenerateEnumLabels;
+											context.IsGenerateFieldSchemaNames = settings.IsGenerateFieldSchemaNames;
+											context.IsGenerateFieldLabels = settings.IsGenerateFieldLabels;
+											context.IsGenerateRelationNames = settings.IsGenerateRelationNames;
+											context.IsImplementINotifyProperty = settings.IsImplementINotifyProperty;
+											context.GenerateGlobalActions = settings.GenerateGlobalActions;
+											context.PluginMetadataEntities = settings.PluginMetadataEntitiesSelected.ToList();
+											context.OptionsetLabelsEntities = settings.OptionsetLabelsEntitiesSelected.ToList();
+											context.LookupLabelsEntities = settings.LookupLabelsEntitiesSelected.ToList();
+											context.JsEarlyBoundEntities = settings.JsEarlyBoundEntitiesSelected.ToList();
+											context.EarlyBoundFilteredSelected = settings.EarlyBoundFilteredSelected.ToList();
+											context.SelectedActions = settings.SelectedActions;
+											context.ClearMode = settings.ClearMode;
+											context.SelectedEntities = settings.EntitiesSelected.ToArray();
+											context.IsGenerateAlternateKeys = settings.IsGenerateAlternateKeys;
+											context.IsUseCustomTypeForAltKeys = settings.IsUseCustomTypeForAltKeys;
+											context.IsMakeCrmEntitiesJsonFriendly = settings.IsMakeCrmEntitiesJsonFriendly;
+											context.CrmEntityProfiles = settings.CrmEntityProfiles;
+											break;
+									}
+								}
+								catch
+								{
+									// ignored
+								}
+							}
+
+							void RegisterMapperEvents()
+							{
+								mapper.Message += MapperOnMessage;
+								mapper.StatusUpdate += MapperOnStatusUpdate;
+							}
+
+							void UnregisterMapperEvents()
+							{
+								mapper.Message -= MapperOnMessage;
+								mapper.StatusUpdate -= MapperOnStatusUpdate;
+							}
+
 							try
 							{
 								w.ReportProgress(0, $"Gathering metadata from server ...");
@@ -1055,98 +1162,9 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 
 								mapper = new Mapper(settings, connectionManager, metadataCache);
 
-								Context context = null;
-								var isCancelled = false;
-
-								mapper.Message
-									+= (o, args) =>
-									   {
-										   try
-										   {
-											   if (args.Exception == null)
-											   {
-												   var message = $"[Generator] {Regex.Replace(args.Message, "^>> ", "[DONE] ")}";
-												   w.ReportProgress(args.Progress ?? -1, message);
-											   }
-										   }
-										   catch
-										   {
-											   // ignored
-										   }
-
-										   return null;
-									   };
-
-								mapper.StatusUpdate
-									+= (o, args) =>
-									   {
-										   try
-										   {
-											   switch (args.Status)
-											   {
-												   case MapperStatus.Cancelled:
-													   isCancelled = true;
-													   break;
-
-												   case MapperStatus.Error:
-													   var message = args.Exception.Message;
-													   var inner = args.Exception?.InnerException;
-
-													   if (inner?.Message.IsFilled() == true)
-													   {
-														   message += $" | {inner.Message}";
-													   }
-
-													   if (args.Exception is NullReferenceException)
-													   {
-														   message = $"Generator failed. Clear the cache and try again.";
-													   }
-
-													   MessageBox.Show(message, "Generation Error",
-														   MessageBoxButtons.OK, MessageBoxIcon.Error);
-													   break;
-
-												   case MapperStatus.Finished:
-													   context = mapper.Context;
-													   context.Namespace = settings.Namespace;
-													   context.SplitFiles = settings.SplitFiles;
-													   context.SplitContractFiles = settings.SplitContractFiles;
-													   context.UseDisplayNames = settings.UseDisplayNames;
-													   context.IsUseCustomDictionary = settings.IsUseCustomDictionary;
-													   context.IsUseCustomEntityReference = settings.IsUseCustomEntityReference;
-													   context.IsAddEntityAnnotations = settings.IsAddEntityAnnotations;
-													   context.IsAddContractAnnotations = settings.IsAddContractAnnotations;
-													   context.IsGenerateLoadPerRelation = settings.IsGenerateLoadPerRelation;
-													   context.IsGenerateEnumNames = settings.IsGenerateEnumNames;
-													   context.IsGenerateEnumLabels = settings.IsGenerateEnumLabels;
-													   context.IsGenerateFieldSchemaNames = settings.IsGenerateFieldSchemaNames;
-													   context.IsGenerateFieldLabels = settings.IsGenerateFieldLabels;
-													   context.IsGenerateRelationNames = settings.IsGenerateRelationNames;
-													   context.IsImplementINotifyProperty = settings.IsImplementINotifyProperty;
-													   context.GenerateGlobalActions = settings.GenerateGlobalActions;
-													   context.PluginMetadataEntities = settings.PluginMetadataEntitiesSelected.ToList();
-													   context.OptionsetLabelsEntities = settings.OptionsetLabelsEntitiesSelected.ToList();
-													   context.LookupLabelsEntities = settings.LookupLabelsEntitiesSelected.ToList();
-													   context.JsEarlyBoundEntities = settings.JsEarlyBoundEntitiesSelected.ToList();
-													   context.EarlyBoundFilteredSelected = settings.EarlyBoundFilteredSelected.ToList();
-													   context.SelectedActions = settings.SelectedActions;
-													   context.ClearMode = settings.ClearMode;
-													   context.SelectedEntities = settings.EntitiesSelected.ToArray();
-													   context.IsGenerateAlternateKeys = settings.IsGenerateAlternateKeys;
-													   context.IsUseCustomTypeForAltKeys = settings.IsUseCustomTypeForAltKeys;
-													   context.IsMakeCrmEntitiesJsonFriendly = settings.IsMakeCrmEntitiesJsonFriendly;
-													   context.CrmEntityProfiles = settings.CrmEntityProfiles;
-													   break;
-											   }
-										   }
-										   catch
-										   {
-											   // ignored
-										   }
-									   };
-
 								try
 								{
+									RegisterMapperEvents();
 									mapper.MapContext();
 								}
 								catch (OperationCanceledException)
@@ -1157,6 +1175,11 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 								{
 									MessageBox.Show(ex.ToString(), "Generation Error", MessageBoxButtons.OK,
 										MessageBoxIcon.Error);
+									return;
+								}
+
+								if (isError)
+								{
 									return;
 								}
 
@@ -1193,6 +1216,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 							}
 							finally
 							{
+								UnregisterMapperEvents();
 								InvokeSafe(() => buttonCancel.Hide());
 								EnableTool();
 							}
