@@ -17,7 +17,6 @@ using System.Windows.Threading;
 using CrmCodeGenerator.VSPackage.Helpers;
 using Yagasoft.CrmCodeGenerator;
 using Yagasoft.CrmCodeGenerator.Connection;
-using Yagasoft.CrmCodeGenerator.Connection.OrgSvcs;
 using Yagasoft.CrmCodeGenerator.Helpers;
 using Yagasoft.CrmCodeGenerator.Models.Cache;
 using Yagasoft.CrmCodeGenerator.Models.Settings;
@@ -35,7 +34,7 @@ namespace CrmCodeGenerator.VSPackage.Dialogs
 	/// </summary>
 	public partial class Options : INotifyPropertyChanged
 	{
-		private readonly IConnectionManager<IDisposableOrgSvc> connectionManager;
+		private readonly IConnectionManager connectionManager;
 		private readonly MetadataCache metadataCache;
 		private readonly WorkerHelper workerHelper;
 
@@ -96,7 +95,7 @@ namespace CrmCodeGenerator.VSPackage.Dialogs
 
 		#region Init
 
-		public Options(Settings settings, IConnectionManager<IDisposableOrgSvc> connectionManager, MetadataCache metadataCache,
+		public Options(Settings settings, IConnectionManager connectionManager, MetadataCache metadataCache,
 			WorkerHelper workerHelper)
 		{
 			InitializeComponent();

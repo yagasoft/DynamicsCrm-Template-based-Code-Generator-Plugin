@@ -20,7 +20,6 @@ using XrmToolBox.Extensibility;
 using XrmToolBox.Extensibility.Args;
 using XrmToolBox.Extensibility.Interfaces;
 using Yagasoft.CrmCodeGenerator.Connection;
-using Yagasoft.CrmCodeGenerator.Connection.OrgSvcs;
 using Yagasoft.CrmCodeGenerator.Mapper;
 using Yagasoft.CrmCodeGenerator.Models.Cache;
 using Yagasoft.CrmCodeGenerator.Models.Mapper;
@@ -41,8 +40,18 @@ using Point = System.Drawing.Point;
 
 namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 {
-	public partial class PluginControl : PluginControlBase, IStatusBarMessenger
+	public partial class PluginControl : PluginControlBase, IStatusBarMessenger, IGitHubPlugin, IPayPalPlugin, IHelpPlugin
 	{
+	    public string UserName => "yagasoft";
+
+	    public string RepositoryName => "DynamicsCrm-Template-based-Code-Generator-Plugin";
+
+	    public string EmailAccount => "mail@yagasoft.com";
+
+	    public string DonationDescription => "Thank you!";
+
+	    public string HelpUrl => "https://blog.yagasoft.com/2020/09/dynamics-template-based-code-generator-supercharged";
+
 		//private bool SettingsSaved
 		//{
 		//	get => settingsSaved;
@@ -827,7 +836,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 
 		private void labelYagasoft_Click(object sender, EventArgs e)
 		{
-			Process.Start(new ProcessStartInfo("http://yagasoft.com"));
+			Process.Start(new ProcessStartInfo("https://yagasoft.com"));
 		}
 
 		private void linkDownVs_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
@@ -837,7 +846,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 
 		private void linkQuickGuide_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
 		{
-			Process.Start(new ProcessStartInfo("http://blog.yagasoft.com/2020/09/dynamics-template-based-code-generator-supercharged"));
+			Process.Start(new ProcessStartInfo("https://blog.yagasoft.com/2020/09/dynamics-template-based-code-generator-supercharged"));
 		}
 
 		private void buttonCancel_Click(object sender, EventArgs e)
@@ -1133,6 +1142,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 											context.IsUseCustomTypeForAltKeys = settings.IsUseCustomTypeForAltKeys;
 											context.IsMakeCrmEntitiesJsonFriendly = settings.IsMakeCrmEntitiesJsonFriendly;
 											context.CrmEntityProfiles = settings.CrmEntityProfiles;
+										    context.EntityProfilesHeaderSelector = settings.EntityProfilesHeaderSelector;
 											break;
 									}
 								}
@@ -1327,27 +1337,12 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 		}
 	}
 
-	public class ConnectionManager : IConnectionManager<IDisposableOrgSvc>
+	public class ConnectionManager : IConnectionManager
 	{
 		public Func<IOrganizationService> ServiceGetter { get; set; }
 
-		public ConnectionManager(Func<IOrganizationService> serviceGetter)
-		{
-			ServiceGetter = serviceGetter;
-		}
+		public ConnectionManager(Func<IOrganizationService> serviceGetter) => ServiceGetter = serviceGetter;
 
-		public IDisposableOrgSvc Get(string connectionString = null)
-		{
-			return new DisposableOrgSvc(ServiceGetter());
-		}
-	}
-
-	public class DisposableOrgSvc : DisposableOrgSvcBase
-	{
-		public DisposableOrgSvc(IOrganizationService innerService) : base(innerService)
-		{ }
-
-		public override void Dispose()
-		{ }
+	    public IOrganizationService Get() => ServiceGetter();
 	}
 }

@@ -21,7 +21,6 @@ using Microsoft.Xrm.Sdk.Metadata;
 using Microsoft.Xrm.Sdk.Metadata.Query;
 using Microsoft.Xrm.Sdk.Query;
 using Yagasoft.CrmCodeGenerator.Connection;
-using Yagasoft.CrmCodeGenerator.Connection.OrgSvcs;
 using Yagasoft.CrmCodeGenerator.Helpers;
 using Yagasoft.CrmCodeGenerator.Models.Cache;
 using Yagasoft.CrmCodeGenerator.Models.Settings;
@@ -209,7 +208,7 @@ namespace CrmCodeGenerator.VSPackage.Dialogs
 		private readonly WorkerHelper workerHelper;
 		private readonly Action callback;
 		private readonly Action closeAction;
-		private readonly IConnectionManager<IDisposableOrgSvc> connectionManager;
+		private readonly IConnectionManager connectionManager;
 		private EntityMetadata metadata;
 
 		private readonly ConcurrentBag<EntityFilterGridRow> rowListAttrSource = new ConcurrentBag<EntityFilterGridRow>();
@@ -235,7 +234,7 @@ namespace CrmCodeGenerator.VSPackage.Dialogs
 
 		public FilterDetails(string logicalName, Settings settings,
 			EntityProfile entityProfile, ObservableCollection<GridRow> entities,
-			IConnectionManager<IDisposableOrgSvc> connectionManager, MetadataCache metadataCache,
+			IConnectionManager connectionManager, MetadataCache metadataCache,
 			WorkerHelper workerHelper, Action callback, Action closeAction)
 		{
 			InitializeComponent();
@@ -421,7 +420,7 @@ namespace CrmCodeGenerator.VSPackage.Dialogs
 							var row = rowList1NSource.FirstOrDefault(r => r.Name == relation1NAsync.SchemaName)
 								?? new Relations1NGridRow
 								   {
-									   IsSelected = EntityProfile.OneToN == null || EntityProfile.OneToN.Contains(relation1NAsync.SchemaName),
+                                       IsSelected = EntityProfile.OneToN?.Contains(relation1NAsync.SchemaName) == true,
 									   Name = relation1NAsync.SchemaName,
 									   ToEntity = relation1NAsync.ReferencingEntity ?? "",
 									   ToField = relation1NAsync.ReferencingAttribute ?? "",
@@ -466,7 +465,7 @@ namespace CrmCodeGenerator.VSPackage.Dialogs
 							var row = rowListN1Source.FirstOrDefault(r => r.Name == relationN1Async.SchemaName)
 								?? new RelationsN1GridRow
 								   {
-									   IsSelected = EntityProfile.NToOne == null || EntityProfile.NToOne.Contains(relationN1Async.SchemaName),
+                                       IsSelected = EntityProfile.NToOne?.Contains(relationN1Async.SchemaName) == true,
 									   Name = relationN1Async.SchemaName,
 									   ToEntity = relationN1Async.ReferencedEntity ?? "",
 									   FromField = relationN1Async.ReferencingAttribute ?? "",
@@ -516,7 +515,7 @@ namespace CrmCodeGenerator.VSPackage.Dialogs
 							var row =
 								new RelationsNnGridRow
 								{
-									IsSelected = EntityProfile.NToN == null || EntityProfile.NToN.Contains(relationNnAsync.SchemaName),
+                                    IsSelected = EntityProfile.NToN?.Contains(relationNnAsync.SchemaName) == true,
 									Name = relationNnAsync.SchemaName,
 									ToEntity = relationNnAsync.Entity1LogicalName == LogicalName
 										? relationNnAsync.Entity2LogicalName
@@ -646,10 +645,7 @@ namespace CrmCodeGenerator.VSPackage.Dialogs
 					Query = entityQueryExpression,
 				};
 
-			using (var service = connectionManager.Get(Settings.ConnectionString))
-			{
-				return (RetrieveMetadataChangesResponse)service.Execute(retrieveMetadataChangesRequest);
-			}
+		    return (RetrieveMetadataChangesResponse)connectionManager.Get().Execute(retrieveMetadataChangesRequest);
 		}
 
 		#endregion
@@ -754,10 +750,15 @@ namespace CrmCodeGenerator.VSPackage.Dialogs
 					.Where(t => t.IsFilled())
 					.Distinct();
 
-				return source
-					.Where(e => filters.Any(f => Regex.IsMatch(e.Name, f)
-						|| (e.DisplayName.IsFilled() && Regex.IsMatch(e.DisplayName, f)) || (e.Rename.IsFilled() && Regex.IsMatch(e.Rename, f))))
-					.Select(e => e.Name).Distinct().ToList();
+			    return source
+			        .Where(e => filters.Any(f => Regex.IsMatch(e.Name, f)
+			            || (e.DisplayName.IsFilled() && Regex.IsMatch(e.DisplayName.ToLower(), f))
+			            || (e.Rename.IsFilled() && Regex.IsMatch(e.Rename.ToLower(), f))
+			            || (e is Relations1NGridRow oneN && ((oneN.ToEntity.IsFilled() && Regex.IsMatch(oneN.ToEntity.ToLower(), f))
+			                || (oneN.ToField.IsFilled() && Regex.IsMatch(oneN.ToField.ToLower(), f))))
+			            || (e is RelationsN1GridRow nOne && ((nOne.ToEntity.IsFilled() && Regex.IsMatch(nOne.ToEntity.ToLower(), f))
+			                || (nOne.FromField.IsFilled() && Regex.IsMatch(nOne.FromField.ToLower(), f))))))
+			        .Select(e => e.Name).Distinct().ToList();
 			}
 
 			return null;

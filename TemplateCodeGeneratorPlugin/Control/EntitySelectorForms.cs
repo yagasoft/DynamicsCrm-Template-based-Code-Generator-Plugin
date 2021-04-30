@@ -12,7 +12,6 @@ using System.Windows.Forms;
 using CrmCodeGenerator.VSPackage.Dialogs;
 using Microsoft.Xrm.Sdk;
 using Yagasoft.CrmCodeGenerator.Connection;
-using Yagasoft.CrmCodeGenerator.Connection.OrgSvcs;
 using Yagasoft.CrmCodeGenerator.Models.Cache;
 using Yagasoft.CrmCodeGenerator.Models.Settings;
 using Yagasoft.TemplateCodeGeneratorPlugin.Helpers;
@@ -31,7 +30,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			}
 		}
 
-		private readonly IConnectionManager<IDisposableOrgSvc> connectionManager;
+		private readonly IConnectionManager connectionManager;
 		private readonly MetadataCache metadataCache;
 		private readonly WorkerHelper workerHelper;
 
@@ -40,7 +39,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 		private FilterDetails currentFilterDetails;
 		private Options currentOptions;
 
-		public EntitySelectorForms(IConnectionManager<IDisposableOrgSvc> connectionManager, MetadataCache metadataCache,
+		public EntitySelectorForms(IConnectionManager connectionManager, MetadataCache metadataCache,
 			WorkerHelper workerHelper)
 		{
 			this.connectionManager = connectionManager;

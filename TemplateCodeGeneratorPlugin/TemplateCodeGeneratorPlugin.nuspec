@@ -4,11 +4,11 @@
   <metadata>
     <id>Template-based-CRM-Code-Generator-Plugin</id>
     <title>Early-bound Template-based Code Generator</title>
-    <version>2.2.2.1</version>
+    <version>2.3.1.1</version>
     <authors>Ahmed Elsawalhy</authors>
     <owners>Ahmed Elsawalhy</owners>
     <projectUrl>https://github.com/yagasoft/DynamicsCrm-Template-based-Code-Generator-Plugin</projectUrl>
-    <iconUrl>http://blog.yagasoft.com/wp-content/uploads/generator-logo.png</iconUrl>
+    <iconUrl>https://blog.yagasoft.com/wp-content/uploads/generator-logo.png</iconUrl>
     <licenseUrl>https://raw.githubusercontent.com/yagasoft/DynamicsCrm-Template-based-Code-Generator-Plugin/master/LICENSE</licenseUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <summary>Template-based Code Generator</summary>
@@ -39,9 +39,13 @@
       + Support bulk relation loading.
       -- Support filtering on relation loading.
     </description>
-    <copyright>Copyright 2020 Ahmed Elsawalhy</copyright>
+    <copyright>Copyright 2021 Ahmed Elsawalhy</copyright>
     <tags>XrmToolBox plugin,tool,CRM,Dynamics,365,yagasoft,xrm,early,bound,code,generate,generator,t4,template</tags>
     <releaseNotes>
+      * 2.3.1.1
+      Improved: filtering feature now works over logical and display names, and renames
+      Updated: latest custom libraries
+      Fixed: template issues
       * 2.2.2.1
       Fixed: mishandling errors
       * 2.2.1.1

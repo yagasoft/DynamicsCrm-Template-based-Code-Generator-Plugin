@@ -4,12 +4,12 @@
 	{
 		public const string AppName = "Dynamics Template-based Code Generator";
 		public const string AppId = "xrmtoolbox-code-gen-plugin";
-		public const string AppVersion = "2.2.2.1";
+		public const string AppVersion = "2.3.1.1";
 
 		public const string SettingsVersion = "2.0.0.1";
 
 		public const string MinTemplateVersion = "2.0.0.1";
-		public const string LatestTemplateVersion = "2.2.1.1";
+		public const string LatestTemplateVersion = "2.3.1.1";
 
 		public const string MetaCacheMemKey = "ys_CrmGen_Meta_639156";
 		public const string ConnCacheMemKey = "ys_CrmGen_Conn_185599";
@@ -18,6 +18,14 @@
 			"    v" + AppVersion + "\r\n" +
 			"~~~~~~~~~~\r\n" +
 			@"
+  >> IMPORTANT VERSION UPDATE <<
+  - FIX: If you are using an unmodified template, please reset (button) the template to get the latest version; otherwise, backup yours, reset, and then using CodeCompare or a similar tool, check the updates.
+  - REQUEST: Please report issues and improvement suggestions on the generator's GitHub repository. Use the 'Help' menu above to access the page.
+  
+  * 2.3.1.1
+  Improved: filtering feature now works over logical and display names, and renames
+  Updated: latest custom libraries
+  Fixed: template issues
   * 2.2.2.1
   Fixed: mishandling errors
   * 2.2.1.1
