@@ -131,7 +131,12 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 			workerHelper = new WorkerHelper(
 				(s, work, callback) => InvokeSafe(() => RunAsync(s, work, callback)),
 				(s, work, callback) => InvokeSafe(() => RunAsync(s, work, callback)));
-			connectionManager = new ConnectionManager(() => Service);
+			connectionManager = new ConnectionManager(
+				() =>
+				{
+					Service.Require(nameof(Service), "A CRM connection is required to proceed.");
+					return Service;
+				});
 			fileHelper = new FileHelper(pluginSettings,
 				(filetype, savedFileGroup) =>
 				{
@@ -1117,7 +1122,7 @@ namespace Yagasoft.TemplateCodeGeneratorPlugin.Control
 											context.Namespace = settings.Namespace;
 											context.SplitFiles = settings.SplitFiles;
 											context.SplitContractFiles = settings.SplitContractFiles;
-											context.UseDisplayNames = settings.UseDisplayNames;
+											context.UseDisplayNames = settings.UseDisplayNames == true;
 											context.IsUseCustomDictionary = settings.IsUseCustomDictionary;
 											context.IsUseCustomEntityReference = settings.IsUseCustomEntityReference;
 											context.IsAddEntityAnnotations = settings.IsAddEntityAnnotations;

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
-
 using Yagasoft.Libraries.Common;
 
 namespace CrmCodeGenerator.VSPackage.Helpers
@@ -112,18 +112,30 @@ namespace CrmCodeGenerator.VSPackage.Helpers
 			return false;
 		}
 
-		public static T GetChild<T>(this DependencyObject depObj) where T : DependencyObject
+		public static T GetChild<T>(this DependencyObject depObj, int? index = null) where T : DependencyObject
 		{
 			if (depObj == null)
 			{
 				return null;
 			}
 
-			for (var i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
+			var count = VisualTreeHelper.GetChildrenCount(depObj);
+
+			for (var i = 0; i < count; i++)
 			{
 				var child = VisualTreeHelper.GetChild(depObj, i);
 
-				var result = (child as T) ?? GetChild<T>(child);
+				if (child is T childT)
+				{
+					if (!index.HasValue || index == i)
+					{
+						return childT;
+					}
+
+					continue;
+				}
+
+				var result = GetChild<T>(child, index);
 
 				if (result != null)
 				{
@@ -146,7 +158,7 @@ namespace CrmCodeGenerator.VSPackage.Helpers
 			for (var i = 0; i < VisualTreeHelper.GetChildrenCount(depObj); i++)
 			{
 				var child = VisualTreeHelper.GetChild(depObj, i);
-				children.AddRange(child is TControl childAsTControl ? new[] { childAsTControl } : GetChildren<TControl>(child));
+				children.AddRange(child is TControl childAsTControl ? new [] { childAsTControl } : GetChildren<TControl>(child));
 			}
 
 			return children;

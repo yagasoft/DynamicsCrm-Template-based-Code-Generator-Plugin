@@ -2,7 +2,6 @@
 
 [![Join the chat at https://gitter.im/yagasoft/DynamicsCrm-TemplateBasedCodeGeneratorPlugin](https://badges.gitter.im/yagasoft/DynamicsCrm-TemplateBasedCodeGeneratorPlugin.svg)](https://gitter.im/yagasoft/DynamicsCrm-TemplateBasedCodeGeneratorPlugin?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-### Version: 2.3.1.1
 ---
 
 An XrmToolBox plugin that can be used to generate Early-bound code from a CRM Schema using a customisable T4 Template.
@@ -49,33 +48,27 @@ The engine for this Plugin and the VS Extension is the same. The settings and T4
 You can read a quick overview of the tool and its functionality [here](http://blog.yagasoft.com/2020/09/dynamics-template-based-code-generator-supercharged).
 
 ## Changes
-
-#### _v2.3.1.1 (2021-04-30)_
-+ Improved: filtering feature now works over logical and display names, and renames
-+ Updated: latest custom libraries
-+ Fixed: template issues
-#### _v2.2.2.1 (2020-10-04)_
-+ Fixed: mishandling errors
-#### _v2.2.1.1 (2020-10-01)_
-+ Added: Filter Details window row filtering
-+ Fixed: generated code 'labels' syntax error
-#### _v2.1.0.1 (2020-09-28)_
++ Check Releases page for the later changes
+#### _v1.0.0.3 to v2.3.1.1 (since 2020-08-25)_
++ Added: all missing features from VS extension (click on 'Quick Guide' for more info), except Contracts
++ Added: keep track of paths (settings, template, and code) used in previous sessions and the links between them
 + Added: recent settings list (load history)
 + Added: reset option for the template text
 + Added: toast notification for clearer status
++ Added: Filter Details window row filtering
 + Improved: load and save logic
++ Improved: filtering feature now works over logical and display names, and renames
++ Changed: updated package name
++ Updated: latest custom libraries
++ Fixed: assembly issues
++ Fixed: layout issues
 + Fixed: fixed cancel button
 + Fixed: issues
-#### _v2.0.0.1 (2020-09-26)_
-+ Added: all missing features from VS extension (click on 'Quick Guide' for more info), except Contracts
-+ Added: keep track of paths (settings, template, and code) used in previous sessions and the links between them
-+ Fixed: layout issues
-#### _v1.0.0.5 (2020-08-28)_
-+ Fixed: assembly issues
-#### _v1.0.0.3 (2020-08-25)_
-+ Changed: updated package name
++ Fixed: generated code 'labels' syntax error
++ Fixed: mishandling errors
++ Fixed: template issues
 #### _v1.0.0.1 (2020-08-24)_
 + Initial release
 
 ---
-**Copyright &copy; by Ahmed Elsawalhy ([Yagasoft](http://yagasoft.com))** -- _GPL v3 Licence_
+**Copyright &copy; by Ahmed Elsawalhy ([Yagasoft](https://yagasoft.com))** -- _GPL v3 Licence_

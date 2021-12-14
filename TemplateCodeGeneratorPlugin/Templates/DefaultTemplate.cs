@@ -61,7 +61,10 @@ using Microsoft.Xrm.Sdk.Client;
 using Microsoft.Xrm.Sdk.Messages;
 using Microsoft.Xrm.Sdk.Query;
 
-<# var selectedEntities = Context.Entities.Where(e => Context.SelectedEntities.Contains(e.LogicalName)).ToArray(); #>
+<#
+   var selectedEntities = Context.Entities.Where(e => Context.SelectedEntities.Contains(e.LogicalName)).ToArray();
+   var globalEnumerations = new Dictionary<string, MappingEnum>();
+#>
 <# if (Context.FileName == ""CrmSchema"") { #>[assembly: ProxyTypesAssemblyAttribute()]<# } #>
 
 namespace <#= Context.Namespace ?? ""<namespace>"" #><# /*if (Context.FileName != ""CrmSchema"") { #>.<#= Context.FileName ?? ""<filename>"" #><#}*/#>
@@ -84,7 +87,15 @@ namespace <#= Context.Namespace ?? ""<namespace>"" #><# /*if (Context.FileName !
 		{
 		}
 
-<# foreach (var entityQ in selectedEntities) {
+<# 
+	var activityParty = Context.Entities.FirstOrDefault(t => t.LogicalName == ""activityparty"");
+	var activityPartyTmpName = Context.CrmEntityProfiles.FirstOrDefault(t => t.LogicalName == ""activityparty"");
+	var activityPartyName = activityPartyTmpName == null || activityPartyTmpName.EntityRename == null
+		? ((Context.UseDisplayNames ? (activityParty == null ? null : activityParty.FriendlyName)
+			: activityParty == null ? null : activityParty.HybridName) ?? ""ActivityParty"")
+		: activityPartyTmpName.EntityRename;
+
+	foreach (var entityQ in selectedEntities) {
 			var crmEntityNameTemp = Context.CrmEntityProfiles.FirstOrDefault(e => e.LogicalName == entityQ.LogicalName);
 			var crmEntityName = (crmEntityNameTemp == null || crmEntityNameTemp.EntityRename == null)
 				? (Context.UseDisplayNames ? entityQ.FriendlyName : entityQ.HybridName) : crmEntityNameTemp.EntityRename;
@@ -2774,7 +2785,8 @@ namespace <#= Context.Namespace ?? ""<namespace>"" #><# /*if (Context.FileName !
 
 <# } #>
 <#
-	Generate();
+	Generate(globalEnumerations, activityPartyName);
+	GenerateGlobalEnumerations(globalEnumerations, Context);
 	GenerateContracts();
 	GenerateBase(Context);
 	CloseFiles();
@@ -2813,7 +2825,7 @@ namespace <#= Context.Namespace ?? ""<namespace>"" #><# /*if (Context.FileName !
    **/
 #>
 <#+
-	void Generate(MappingEntity entity, Context Context)
+	void Generate(MappingEntity entity, Context Context, Dictionary<string, MappingEnum> globalEnumerations, string activityPartyName)
 	{
 		var selectedEntities = Context.Entities.Where(e => Context.SelectedEntities.Contains(e.LogicalName)).ToArray();
 		var oneNRels= entity.RelationshipsOneToMany.Where(r => selectedEntities.Select(m => m.LogicalName).Contains(r.Type));
@@ -2899,7 +2911,8 @@ namespace <#= Context.Namespace ?? ""<namespace>"" #><# /*if (Context.FileName !
 <#+	foreach(var attribute in fields)	{
 			var isAttributeContract = isContract && entityProfiles.EntityProfilesHeaders.Any(e => e.EntityProfiles.Any(filter => filter.LogicalName == entity.LogicalName && filter.IsIncluded && filter.Attributes != null && filter.Attributes.Contains(attribute.Attribute.LogicalName)));
             var attributeName = Context.UseDisplayNames ? (FirstNotNullOrEmpty((entityFilter == null || entityFilter.AttributeRenames == null) ? null : entityFilter.AttributeRenames, attribute.Attribute.LogicalName) ?? attribute.FriendlyName) : attribute.DisplayName;
-            var attributeType = ConvertToContractType(attribute, attributeName);
+            var isGlobal = attribute.EnumData != null && attribute.EnumData.Global != null;
+			var attributeType = ConvertToContractType(attribute, isGlobal ? (Context.UseDisplayNames ? attribute.EnumData.Global.FriendlyName : attribute.EnumData.Global.DisplayName) : attributeName);
 			attributeType = ((attribute.Attribute != null && attribute.Attribute.IsMultiTyped) && Context.IsUseCustomEntityReference) ? ""LookupValue"" : attributeType;
 			var crmType = attribute.IsStateCode ? ""OptionSetValue"" : ((attribute.EnumData != null && attribute.EnumData.IsMultiSelect) ? ""OptionSetValueCollection"" : attribute.TargetTypeForCrmSvcUtil);
             var attributeAnnotations = FirstNotNullOrEmpty((entityFilter == null || entityFilter.AttributeAnnotations == null) ? null : entityFilter.AttributeAnnotations, attribute.Attribute.LogicalName);
@@ -2916,7 +2929,11 @@ namespace <#= Context.Namespace ?? ""<namespace>"" #><# /*if (Context.FileName !
 <#+ if(attribute.IsDeprecated) { #>
 		[Obsolete]
 <#+ } #>
-		public <#= attributeType #> <#= attributeName #>
+<#+ if(attribute.IsActivityParty) {#>
+		public <#= activityPartyName #>[] <#= attributeName #>
+<#+ } else { #>
+		public <#= isGlobal ? ""GlobalEnums."" : """" #><#= attributeType #> <#= attributeName #>
+<#+ } #>
 		{
 <#+ if (attribute.IsActivityParty) { #>
 			get
@@ -2926,7 +2943,7 @@ namespace <#= Context.Namespace ?? ""<namespace>"" #><# /*if (Context.FileName !
 				if (collection == null && backupAttributeCollection != null && backupAttributeCollection.Contains(""<#= attribute.Attribute.LogicalName #>""))
 				    collection = (EntityCollection) backupAttributeCollection[""<#= attribute.Attribute.LogicalName #>""];
 <#+ } #>
-				if (collection != null && collection.Entities != null) return collection.Entities.Select(entity => entity.ToEntity<ActivityParty>()).ToArray();
+				if (collection != null && collection.Entities != null) return collection.Entities.Select(entity => entity.ToEntity<<#= activityPartyName #>>()).ToArray();
 				else return null;
 			}
 			set
@@ -2947,10 +2964,11 @@ namespace <#= Context.Namespace ?? ""<namespace>"" #><# /*if (Context.FileName !
 				if (value == null && backupAttributeCollection != null && backupAttributeCollection.Contains(""<#= attribute.Attribute.LogicalName #>""))
 				    value = (<#= crmType #>) backupAttributeCollection[""<#= attribute.Attribute.LogicalName #>""];
 <#+ } #>
-<#+ if (attribute.EnumData != null && attribute.EnumData.IsMultiSelect) { #>
-                return value?.Cast<<#= attributeType.Replace(""[]"", """") #>>().ToArray();
+<#+ if (attribute.EnumData != null && attribute.EnumData.IsMultiSelect == true) {
+#>
+				return value?.Cast<<#= isGlobal ? ""GlobalEnums."" : """" #><#= attributeType.Replace(""[]"", """") #>>().ToArray();
 <#+ } else if(attribute.TargetTypeForCrmSvcUtil.Contains(""OptionSetValue"") || attribute.IsStateCode) { #>
-                return (<#= attributeType #>) value?.Value;
+				return (<#= isGlobal ? ""GlobalEnums."" : """" #><#= attributeType #>)value?.Value;
 <#+ } else if (attribute.TargetTypeForCrmSvcUtil.Contains(""Money"")) { #>
                 return value?.Value;
 <#+ } else if (attribute.Attribute != null && attribute.Attribute.IsMultiTyped && Context.IsUseCustomEntityReference) { #>
@@ -3499,6 +3517,11 @@ namespace <#= Context.Namespace ?? ""<namespace>"" #><# /*if (Context.FileName !
 <#+ foreach(var enm in entity.Enums.Where(e => fields.Any(f => f.LogicalName == e.LogicalName))) {
         var attribute = entity.Fields.FirstOrDefault(field => field.LogicalName == enm.LogicalName);
         var attributeName = Context.UseDisplayNames ? (FirstNotNullOrEmpty((entityFilter == null || entityFilter.AttributeRenames == null) ? null : entityFilter.AttributeRenames, attribute == null ? """" : attribute.Attribute.LogicalName) ?? enm.FriendlyName) : enm.DisplayName;
+		
+		if (enm.Global != null) {
+			globalEnumerations[enm.Global.LogicalName] = enm;
+			continue;
+		}
  #>
 		public enum <#= attributeName #>Enum
 		{
@@ -3736,17 +3759,75 @@ namespace <#= Context.Namespace ?? ""<namespace>"" #><# /*if (Context.FileName !
 <#+
 	}
 
-	void Generate()
+	void Generate(Dictionary<string, MappingEnum> globalEnumerations, string activityPartyName)
 	{
         var Context = (Context)((ITextTemplatingSessionHost)this.Host).Session[""Context""];
 		var selectedEntities = Context.Entities.Where(e => Context.SelectedEntities.Contains(e.LogicalName));
 
 		foreach (var entity in selectedEntities)
 		{
-			Generate(entity, Context);
+			Generate(entity, Context, globalEnumerations, activityPartyName);
 		}
 	}
 #>
+
+
+<#+
+   /***********************************************************
+    **********************************************************
+    *********************************************************
+    ********************************************************
+    *******************************************************
+    ******************************************************
+    *****************************************************
+    ****************************************************
+    ***************************************************
+    **************************************************
+    *************************************************
+    ************************************************
+    ***********************************************
+    **********************************************
+    *********************************************
+	// *** >>>> Global Option-sets generator <<<<
+    *********************************************
+    **********************************************
+    ***********************************************
+    ************************************************
+    *************************************************
+    **************************************************
+    ***************************************************
+    ****************************************************
+    *****************************************************
+    ******************************************************
+    *******************************************************
+    ********************************************************
+    *********************************************************
+    **********************************************************
+   **/
+#>
+
+<#+
+	void GenerateGlobalEnumerations(Dictionary<string, MappingEnum> globalEnumerations, Context Context)
+    {
+#>
+
+	public class GlobalEnums
+	{
+<#+
+	 foreach(var enm in globalEnumerations) {
+		var mappingEnum = enm.Value;
+		var attributeType = Context.UseDisplayNames ? mappingEnum.Global.FriendlyName : mappingEnum.Global.DisplayName;
+#>
+		public enum <#= attributeType #>
+		{
+<#+ foreach(var item in mappingEnum.Items) { #>
+			<#+ if (Context.IsAddEntityAnnotations) { #>[EnumMember]<#+ } #><#= item.Name #> = <#= item.Value #>,
+<#+ } #>
+		}
+
+<#+ } #>
+	}
+<#+ } #>
 
 <#+
    /***********************************************************
@@ -4619,11 +4700,11 @@ namespace <#= Context.Namespace ?? ""<namespace>"" #><# /*if (Context.FileName !
 
 		if (crmType.Contains(""OptionSetValue"") || field.IsStateCode)
 		{
-			return attributeName + ""Enum?"";
+			return attributeName + (field.EnumData == null || field.EnumData.Global == null ? ""Enum?"" : ""?"");
 		}
         else if (field.EnumData != null && field.EnumData.IsMultiSelect)
         {
-            return attributeName + ""Enum[]"";
+            return attributeName + (field.EnumData == null || field.EnumData.Global == null ? ""Enum[]"" : ""[]"");
         }
 		else if (crmType.Contains(""EntityReference"") && !string.IsNullOrEmpty(field.LookupData == null ? null : field.LookupData.LookupSingleType))
 		{

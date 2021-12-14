@@ -24,7 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -33,15 +33,15 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <LangVersion>8.0</LangVersion>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="McTools.Xrm.Connection, Version=1.2020.1.29, Culture=neutral, PublicKeyToken=96037217801d9658, processorArchitecture=MSIL">
-      <HintPath>..\packages\MscrmTools.Xrm.Connection.1.2020.1.29\lib\net462\McTools.Xrm.Connection.dll</HintPath>
+    <Reference Include="McTools.Xrm.Connection, Version=1.2020.2.30, Culture=neutral, PublicKeyToken=96037217801d9658, processorArchitecture=MSIL">
+      <HintPath>..\packages\MscrmTools.Xrm.Connection.1.2020.2.30\lib\net462\McTools.Xrm.Connection.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="McTools.Xrm.Connection.WinForms, Version=1.2020.1.29, Culture=neutral, PublicKeyToken=f1559f79cf894e27, processorArchitecture=MSIL">
-      <HintPath>..\packages\MscrmTools.Xrm.Connection.1.2020.1.29\lib\net462\McTools.Xrm.Connection.WinForms.dll</HintPath>
+    <Reference Include="McTools.Xrm.Connection.WinForms, Version=1.2020.2.30, Culture=neutral, PublicKeyToken=f1559f79cf894e27, processorArchitecture=MSIL">
+      <HintPath>..\packages\MscrmTools.Xrm.Connection.1.2020.2.30\lib\net462\McTools.Xrm.Connection.WinForms.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Microsoft.Crm.Sdk.Proxy, Version=9.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
@@ -56,16 +56,20 @@
       <HintPath>..\packages\Microsoft.CrmSdk.XrmTooling.CoreAssembly.9.1.0.26\lib\net462\Microsoft.Rest.ClientRuntime.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="Microsoft.VisualStudio.TextTemplating.12.0">
-      <HintPath>..\lib\Microsoft.VisualStudio.TextTemplating.12.0.dll</HintPath>
+    <Reference Include="Microsoft.VisualStudio.TextTemplating.14.0, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.VisualStudio.TextTemplating.14.0.14.0.23205\lib\net45\Microsoft.VisualStudio.TextTemplating.14.0.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.TextTemplating.Interfaces.10.0, Version=10.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\Microsoft.VisualStudio.TextTemplating.Interfaces.10.0.dll</HintPath>
+      <HintPath>..\packages\Microsoft.VisualStudio.TextTemplating.Interfaces.10.0.10.0.30319\lib\net40\Microsoft.VisualStudio.TextTemplating.Interfaces.10.0.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.VisualStudio.TextTemplating.Interfaces.11.0, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\Microsoft.VisualStudio.TextTemplating.Interfaces.11.0.dll</HintPath>
+      <HintPath>..\packages\Microsoft.VisualStudio.TextTemplating.Interfaces.11.0.11.0.50727\lib\net45\Microsoft.VisualStudio.TextTemplating.Interfaces.11.0.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.TextTemplating.Interfaces.14.0, Version=14.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.VisualStudio.TextTemplating.Interfaces.14.0.14.0.23205\lib\net45\Microsoft.VisualStudio.TextTemplating.Interfaces.14.0.dll</HintPath>
+    </Reference>
+    <Reference Include="Microsoft.VisualStudio.TextTemplating.Interfaces.15.0, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.VisualStudio.TextTemplating.Interfaces.15.0.15.0.26228\lib\net45\Microsoft.VisualStudio.TextTemplating.Interfaces.15.0.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Web.XmlTransform, Version=15.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Xdt.2.1.2\lib\net40\Microsoft.Web.XmlTransform.dll</HintPath>
@@ -107,13 +111,15 @@
       <HintPath>..\packages\NuGet.Core.2.14.0\lib\net40-Client\NuGet.Core.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationCore">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="PresentationFramework">
       <Private>False</Private>
     </Reference>
     <Reference Include="ScintillaNET, Version=3.6.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\jacobslusser.ScintillaNET.3.6.3\lib\net40\ScintillaNET.dll</HintPath>
-      <Private>True</Private>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System">
       <Private>False</Private>
@@ -207,7 +213,9 @@
     <Reference Include="System.Workflow.Runtime">
       <Private>False</Private>
     </Reference>
-    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xaml">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="System.Xml.Linq">
       <Private>False</Private>
     </Reference>
@@ -220,7 +228,9 @@
     <Reference Include="System.Xml">
       <Private>False</Private>
     </Reference>
-    <Reference Include="UIAutomationProvider" />
+    <Reference Include="UIAutomationProvider">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="WeifenLuo.WinFormsUI.Docking, Version=3.0.6.0, Culture=neutral, PublicKeyToken=5cded1a1a0a7b481, processorArchitecture=MSIL">
       <HintPath>..\packages\DockPanelSuite.3.0.6\lib\net40\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
       <Private>False</Private>
@@ -229,25 +239,29 @@
       <HintPath>..\packages\DockPanelSuite.ThemeVS2015.3.0.6\lib\net40\WeifenLuo.WinFormsUI.Docking.ThemeVS2015.dll</HintPath>
       <Private>False</Private>
     </Reference>
-    <Reference Include="WindowsBase" />
-    <Reference Include="WindowsFormsIntegration" />
-    <Reference Include="XrmToolBox, Version=1.2020.2.36, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\XrmToolBoxPackage.1.2020.2.36\lib\net462\XrmToolBox.exe</HintPath>
+    <Reference Include="WindowsBase">
       <Private>False</Private>
     </Reference>
-    <Reference Include="XrmToolBox.Extensibility, Version=1.2020.2.36, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\XrmToolBoxPackage.1.2020.2.36\lib\net462\XrmToolBox.Extensibility.dll</HintPath>
+    <Reference Include="WindowsFormsIntegration">
       <Private>False</Private>
     </Reference>
-    <Reference Include="XrmToolBox.PluginsStore, Version=1.2020.2.36, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\XrmToolBoxPackage.1.2020.2.36\lib\net462\XrmToolBox.PluginsStore.dll</HintPath>
+    <Reference Include="XrmToolBox, Version=1.2020.2.37, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\XrmToolBoxPackage.1.2020.2.37\lib\net462\XrmToolBox.exe</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="XrmToolBox.Extensibility, Version=1.2020.2.37, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\XrmToolBoxPackage.1.2020.2.37\lib\net462\XrmToolBox.Extensibility.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="XrmToolBox.PluginsStore, Version=1.2020.2.37, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\XrmToolBoxPackage.1.2020.2.37\lib\net462\XrmToolBox.PluginsStore.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Yagasoft.CrmCodeGenerator">
       <HintPath>..\lib\Yagasoft.CrmCodeGenerator.dll</HintPath>
     </Reference>
-    <Reference Include="Yagasoft.Libraries.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=d99f90f6e31ed2df, processorArchitecture=MSIL">
-      <HintPath>..\packages\Yagasoft.Libraries.Common.2.4.5\lib\net462\Yagasoft.Libraries.Common.dll</HintPath>
+    <Reference Include="Yagasoft.Libraries.Common, Version=3.3.3.0, Culture=neutral, PublicKeyToken=d99f90f6e31ed2df, processorArchitecture=MSIL">
+      <HintPath>..\packages\Yagasoft.Libraries.Common.4.1.1\lib\net462\Yagasoft.Libraries.Common.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -278,7 +292,7 @@
     <Compile Include="Control\TemplateEditor.Designer.cs">
       <DependentUpon>TemplateEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="Control\XrmMockGeneratorPluginControl.cs">
+    <Compile Include="Control\TemplateCodeGeneratorPluginControl.cs">
       <SubType>UserControl</SubType>
     </Compile>
     <Compile Include="Dialogues\Converters\BoolToVisibilityConverter.cs" />
@@ -297,6 +311,7 @@
     <Compile Include="Dialogues\PopupSelector.xaml.cs">
       <DependentUpon>PopupSelector.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Helpers\DataGridBehaviour.cs" />
     <Compile Include="Helpers\Extensions.cs" />
     <Compile Include="Helpers\FileHelpers.cs" />
     <Compile Include="Helpers\Status.cs" />
@@ -310,6 +325,15 @@
     <Compile Include="Model\Settings\PluginSettings.cs" />
     <Compile Include="Model\Settings\SerialisableDictionary.cs" />
     <Compile Include="Model\ViewModels\EntityNameViewModel.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\ClearModeEnumUi.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\EntityFilterGridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\EntityGridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\EntityProfileGridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\EntitySelectionGridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\GridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\Relations1NGridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\RelationsN1GridRow.cs" />
+    <Compile Include="Model\ViewModels\EntitySelector\RelationsNnGridRow.cs" />
     <Compile Include="Model\ViewModels\TemplateViewModel.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
@@ -321,15 +345,6 @@
     <Compile Include="Utils\HotKeyManager.cs" />
     <Compile Include="TemplateCodeGeneratorPlugin.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Model\ViewModels\EntitySelector\ClearModeEnumUi.cs" />
-    <Compile Include="Model\ViewModels\EntitySelector\EntityFilterGridRow.cs" />
-    <Compile Include="Model\ViewModels\EntitySelector\EntityGridRow.cs" />
-    <Compile Include="Model\ViewModels\EntitySelector\EntityProfileGridRow.cs" />
-    <Compile Include="Model\ViewModels\EntitySelector\EntitySelectionGridRow.cs" />
-    <Compile Include="Model\ViewModels\EntitySelector\GridRow.cs" />
-    <Compile Include="Model\ViewModels\EntitySelector\Relations1NGridRow.cs" />
-    <Compile Include="Model\ViewModels\EntitySelector\RelationsN1GridRow.cs" />
-    <Compile Include="Model\ViewModels\EntitySelector\RelationsNnGridRow.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -358,8 +373,8 @@
     <EmbeddedResource Include="Control\TemplateEditor.resx">
       <DependentUpon>TemplateEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="Control\XrmMockGeneratorPluginControl.resx">
-      <DependentUpon>XrmMockGeneratorPluginControl.cs</DependentUpon>
+    <EmbeddedResource Include="Control\TemplateCodeGeneratorPluginControl.resx">
+      <DependentUpon>TemplateCodeGeneratorPluginControl.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -373,6 +388,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="nuget-access-key.txt" />
+    <None Include="Resources\Microsoft.CodeAnalysis.dll" />
   </ItemGroup>
   <ItemGroup>
     <Page Include="Dialogues\EntitySelection.xaml">
@@ -399,7 +415,11 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>IF NOT EXIST "$(SolutionDir)XrmToolBox\Plugins" mkdir "$(SolutionDir)XrmToolBox\Plugins"
+    <PostBuildEvent>copy /Y "$(SolutionDir)packages\Yagasoft.Libraries.Common.4.1.1\lib\net462" "$(SolutionDir)lib\ILMerge\"
+copy /Y "$(SolutionDir)lib\*.dll" "$(SolutionDir)lib\ILMerge\"
+
+IF NOT EXIST "$(SolutionDir)XrmToolBox\Plugins" mkdir "$(SolutionDir)XrmToolBox\Plugins"
+copy /Y "$(SolutionDir)XrmToolBox\Plugins\$(TargetFileName)" "$(SolutionDir)lib\ILMerge\"
 
 IF "$(ConfigurationName)" == "Debug" (
   $(SolutionDir)packages\ILMerge.3.0.41\tools\net452\ILMerge.exe /out:"$(SolutionDir)XrmToolBox\Plugins\$(TargetFileName)" "$(TargetDir)*.dll" /target:library /wildcards /lib:"$(SolutionDir)lib\ILMerge" /lib:"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\PrivateAssemblies" /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.2" /attr:"$(TargetPath)"
