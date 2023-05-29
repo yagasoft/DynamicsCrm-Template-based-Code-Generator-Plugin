@@ -261,7 +261,7 @@
       <HintPath>..\lib\Yagasoft.CrmCodeGenerator.dll</HintPath>
     </Reference>
     <Reference Include="Yagasoft.Libraries.Common, Version=3.3.3.0, Culture=neutral, PublicKeyToken=d99f90f6e31ed2df, processorArchitecture=MSIL">
-      <HintPath>..\packages\Yagasoft.Libraries.Common.4.1.1\lib\net462\Yagasoft.Libraries.Common.dll</HintPath>
+      <HintPath>..\packages\Yagasoft.Libraries.Common.4.1.4\lib\net462\Yagasoft.Libraries.Common.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

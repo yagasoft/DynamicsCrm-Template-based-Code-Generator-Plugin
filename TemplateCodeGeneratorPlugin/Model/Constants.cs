@@ -4,7 +4,7 @@
 	{
 		public const string AppName = "Dynamics Template-based Code Generator";
 		public const string AppId = "xrmtoolbox-code-gen-plugin";
-		public const string AppVersion = "2.4.1.2";
+		public const string AppVersion = "2.5.1.1";
 
 		public const string SettingsVersion = "2.0.0.1";
 
@@ -14,8 +14,12 @@
 			@"
   >> IMPORTANT VERSION UPDATE <<
   - FIX: If you are using an unmodified template, please reset (button) the template to get the latest version; otherwise, backup yours, reset, and then using CodeCompare or a similar tool, check the updates.
+    > Latest template modification in version: 2.4.1.2
   - REQUEST: Please report issues and improvement suggestions on the generator's GitHub repository. Use the 'Help' menu above to access the page.
   
+  * 2.5.1.1
+  Improved: save values sorted to improve source control difference detection.
+  Update: upgraded to the newest YS Library.
   * 2.4.1.2
   Added: [template] unify global option-sets (thanks https://github.com/ClemensWon)
   Fixed: Use Display Names option not saved correctly
