@@ -459,3 +459,4 @@ nuget-access-key.txt
 # Copyrighted
 Microsoft.Office.Interop.Visio.dll
 /XrmToolbox
+/lib/ILMerge/Yagasoft.TemplateCodeGeneratorPlugin.dll
