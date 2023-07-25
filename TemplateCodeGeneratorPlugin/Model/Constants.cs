@@ -4,7 +4,7 @@
 	{
 		public const string AppName = "Dynamics Template-based Code Generator";
 		public const string AppId = "xrmtoolbox-code-gen-plugin";
-		public const string AppVersion = "2.5.1.2";
+		public const string AppVersion = "2.5.1.3";
 
 		public const string SettingsVersion = "2.0.0.1";
 
@@ -17,7 +17,7 @@
     > Latest template modification in version: 2.4.1.2
   - REQUEST: Please report issues and improvement suggestions on the generator's GitHub repository. Use the 'Help' menu above to access the page.
   
-  * 2.5.1.2
+  * 2.5.1.3
   Improved: save values sorted to improve source control difference detection.
   Update: upgraded to the newest YS Library.
   * 2.4.1.2

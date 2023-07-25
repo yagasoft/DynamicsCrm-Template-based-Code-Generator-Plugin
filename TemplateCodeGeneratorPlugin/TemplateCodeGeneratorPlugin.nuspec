@@ -4,7 +4,7 @@
   <metadata>
     <id>Template-based-CRM-Code-Generator-Plugin</id>
     <title>Early-bound Template-based Code Generator</title>
-    <version>2.5.1.2</version>
+    <version>2.5.1.3</version>
     <authors>Ahmed Elsawalhy</authors>
     <owners>Ahmed Elsawalhy</owners>
     <projectUrl>https://github.com/yagasoft/DynamicsCrm-Template-based-Code-Generator-Plugin</projectUrl>
@@ -42,7 +42,7 @@
     <copyright>Copyright 2023 Ahmed Elsawalhy</copyright>
     <tags>XrmToolBox plugin,tool,CRM,Dynamics,365,yagasoft,xrm,early,bound,code,generate,generator,t4,template</tags>
     <releaseNotes>
-      * 2.5.1.2
+      * 2.5.1.3
       Improved: save values sorted to improve source control difference detection.
       Update: upgraded to the newest YS Library.
       * 2.4.1.2
@@ -84,6 +84,6 @@
     </dependencies>
   </metadata>
   <files>
-    <file src="..\XrmToolBox\Plugins\Yagasoft.TemplateCodeGeneratorPlugin.dll" target="lib\net462\Plugins" />
+    <file src="bin\Release\Yagasoft.TemplateCodeGeneratorPlugin.dll" target="lib\net462\Plugins" />
   </files>
 </package>
