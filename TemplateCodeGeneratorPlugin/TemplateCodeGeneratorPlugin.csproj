@@ -27,7 +27,7 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
@@ -260,8 +260,8 @@
     <Reference Include="Yagasoft.CrmCodeGenerator">
       <HintPath>..\lib\Yagasoft.CrmCodeGenerator.dll</HintPath>
     </Reference>
-    <Reference Include="Yagasoft.Libraries.Common, Version=3.3.3.0, Culture=neutral, PublicKeyToken=d99f90f6e31ed2df, processorArchitecture=MSIL">
-      <HintPath>..\packages\Yagasoft.Libraries.Common.4.1.4\lib\net462\Yagasoft.Libraries.Common.dll</HintPath>
+    <Reference Include="Yagasoft.Libraries.Common, Version=5.1.3.0, Culture=neutral, PublicKeyToken=d99f90f6e31ed2df, processorArchitecture=MSIL">
+      <HintPath>..\packages\Yagasoft.Libraries.Common.5.1.3\lib\net462\Yagasoft.Libraries.Common.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -415,22 +415,23 @@
   <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(SolutionDir)packages\Yagasoft.Libraries.Common.4.1.1\lib\net462" "$(SolutionDir)lib\ILMerge\"
+    <PostBuildEvent>copy /Y "$(SolutionDir)packages\Yagasoft.Libraries.Common.5.1.3\lib\net462" "$(SolutionDir)lib\ILMerge\"
 copy /Y "$(SolutionDir)lib\*.dll" "$(SolutionDir)lib\ILMerge\"
 
 IF NOT EXIST "$(SolutionDir)XrmToolBox\Plugins" mkdir "$(SolutionDir)XrmToolBox\Plugins"
-copy /Y "$(SolutionDir)XrmToolBox\Plugins\$(TargetFileName)" "$(SolutionDir)lib\ILMerge\"
+copy /Y "$(TargetPath)" "$(SolutionDir)lib\ILMerge\"
 
 IF "$(ConfigurationName)" == "Debug" (
-  $(SolutionDir)packages\ILMerge.3.0.41\tools\net452\ILMerge.exe /out:"$(SolutionDir)XrmToolBox\Plugins\$(TargetFileName)" "$(TargetDir)*.dll" /target:library /wildcards /lib:"$(SolutionDir)lib\ILMerge" /lib:"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\PrivateAssemblies" /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.2" /attr:"$(TargetPath)"
+  $(SolutionDir)packages\ILMerge.3.0.41\tools\net452\ILMerge.exe /out:"$(TargetPath)" "$(TargetDir)*.dll" /target:library /wildcards /lib:"$(SolutionDir)lib\ILMerge" /lib:"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\PrivateAssemblies" /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.2" /attr:"$(TargetPath)"
 )
 
 IF "$(ConfigurationName)" == "Release" (
-  $(SolutionDir)packages\ILMerge.3.0.41\tools\net452\ILMerge.exe /out:"$(SolutionDir)XrmToolBox\Plugins\$(TargetFileName)" "$(TargetDir)*.dll" /target:library /wildcards /ndebug /lib:"$(SolutionDir)lib\ILMerge" /lib:"C:\Program Files (x86)\Microsoft Visual Studio 14.0\Common7\IDE\PrivateAssemblies" /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.2" /attr:"$(TargetPath)"
+  $(SolutionDir)packages\ILMerge.3.0.41\tools\net452\ILMerge.exe /out:"$(TargetPath)" "$(TargetDir)*.dll" /target:library /wildcards /ndebug /lib:"$(SolutionDir)lib\ILMerge" /lib:"C:\Program Files\Microsoft Visual Studio\2022\Enterprise\Common7\IDE\PrivateAssemblies" /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.6.2" /attr:"$(TargetPath)"
   $(SolutionDir)lib/nuget.exe pack $(ProjectDir)\TemplateCodeGeneratorPlugin.nuspec
   copy /Y "$(TargetDir)*.nupkg" "C:\Nuget.Local\"
 )
-</PostBuildEvent>
+
+copy /Y "$(TargetPath)" "$(SolutionDir)XrmToolBox\Plugins\"</PostBuildEvent>
   </PropertyGroup>
   <PropertyGroup>
     <PreBuildEvent>del "$(TargetDir)*.nupkg"</PreBuildEvent>
